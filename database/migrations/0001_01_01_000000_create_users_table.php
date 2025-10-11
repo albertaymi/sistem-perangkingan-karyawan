@@ -8,23 +8,41 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * Tabel users untuk 4 role: super_admin, hrd, supervisor, karyawan
      */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+
+            // Data dasar pengguna
+            $table->string('nama');
+            $table->string('username')->unique();
             $table->string('password');
+            $table->enum('role', ['super_admin', 'hrd', 'supervisor', 'karyawan'])->default('karyawan');
+
+            // Data tambahan untuk karyawan
+            $table->string('nik')->nullable()->unique(); // Nomor Induk Karyawan
+            $table->string('divisi')->nullable(); // Divisi/Departemen
+            $table->string('jabatan')->nullable(); // Jabatan
+
+            // Relasi ke Super Admin dan HRD (creator/pengelola)
+            $table->foreignId('created_by_super_admin_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('created_by_hrd_id')->nullable()->constrained('users')->cascadeOnDelete();
+
+            // Status approval untuk registrasi baru
+            $table->enum('status_approval', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->timestamp('approved_at')->nullable();
+            $table->foreignId('approved_by')->nullable()->constrained('users');
+            $table->text('rejection_reason')->nullable();
+
+            // Status akun (aktif/tidak aktif)
+            $table->enum('status_akun', ['aktif', 'tidak_aktif'])->default('aktif');
+
+            // Standar Laravel
             $table->rememberToken();
             $table->timestamps();
-        });
-
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+            $table->softDeletes(); // Soft delete untuk keamanan data
         });
 
         Schema::create('sessions', function (Blueprint $table) {
@@ -43,7 +61,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }
 };
