@@ -1,5 +1,8 @@
+{{-- Backdrop overlay untuk mobile --}}
+<div id="sidebar-backdrop" class="fixed inset-0 z-30 bg-gray-900/50 hidden" aria-hidden="true"></div>
+
 {{-- Sidebar dengan responsive toggle dan kategori menu --}}
-<aside id="logo-sidebar" class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white shadow-lg border-r border-gray-200 overflow-y-auto transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
+<aside id="logo-sidebar" class="fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-64 bg-white shadow-lg border-r border-gray-200 overflow-y-auto transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
     <div class="flex flex-col h-full">
         {{-- Menu Items --}}
         <nav class="flex-1 px-4 py-6 space-y-2">
@@ -15,7 +18,7 @@
                 {{-- Kelola Akun --}}
                 <div class="pt-4">
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Manajemen User</p>
-                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-150">
+                    <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-150">
                         <svg class="h-5 w-5 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                         </svg>
@@ -108,19 +111,48 @@
     // Toggle sidebar untuk mobile
     const sidebarToggle = document.querySelector('[data-drawer-toggle="logo-sidebar"]');
     const sidebar = document.getElementById('logo-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
 
-    if (sidebarToggle && sidebar) {
+    if (sidebarToggle && sidebar && backdrop) {
+        // Toggle sidebar dan backdrop
         sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('-translate-x-full');
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+            if (isOpen) {
+                // Close sidebar
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            } else {
+                // Open sidebar (hanya di mobile)
+                if (window.innerWidth < 640) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                }
+            }
+        });
+
+        // Close sidebar saat klik backdrop
+        backdrop.addEventListener('click', function() {
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
         });
 
         // Close sidebar saat klik di luar pada mobile
         document.addEventListener('click', function(event) {
             const isClickInsideSidebar = sidebar.contains(event.target);
             const isClickOnToggle = sidebarToggle.contains(event.target);
+            const isClickOnBackdrop = backdrop.contains(event.target);
 
-            if (!isClickInsideSidebar && !isClickOnToggle && window.innerWidth < 640) {
+            if (!isClickInsideSidebar && !isClickOnToggle && !isClickOnBackdrop && window.innerWidth < 640) {
                 sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        });
+
+        // Hide backdrop on resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 640) {
+                backdrop.classList.add('hidden');
             }
         });
     }
