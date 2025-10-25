@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\KriteriaController;
 
 // Redirect root ke login
 Route::get('/', fn() => redirect()->route('login'));
@@ -33,4 +34,15 @@ Route::middleware(['auth', 'role:super_admin,hrd'])->prefix('users')->name('user
     Route::post('/{id}/approve', [UserController::class, 'approve'])->name('approve');
     Route::post('/{id}/reject', [UserController::class, 'reject'])->name('reject');
     Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+});
+
+// Kriteria Management Routes (Super Admin & HRD only)
+Route::middleware(['auth', 'role:super_admin,hrd'])->prefix('kriteria')->name('kriteria.')->group(function () {
+    Route::get('/', [KriteriaController::class, 'index'])->name('index');
+    Route::post('/', [KriteriaController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [KriteriaController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [KriteriaController::class, 'update'])->name('update');
+    Route::delete('/{id}', [KriteriaController::class, 'destroy'])->name('destroy');
+    Route::post('/{id}/toggle-status', [KriteriaController::class, 'toggleStatus'])->name('toggle-status');
+    Route::get('/total-bobot', [KriteriaController::class, 'getTotalBobot'])->name('total-bobot');
 });
