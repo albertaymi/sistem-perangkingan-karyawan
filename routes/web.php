@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\SubKriteriaController;
 use App\Http\Controllers\DropdownOptionController;
+use App\Http\Controllers\PenilaianController;
 
 // Redirect root ke login
 Route::get('/', fn() => redirect()->route('login'));
@@ -65,4 +66,15 @@ Route::middleware(['auth', 'role:super_admin,hrd'])->prefix('kriteria')->name('k
     Route::delete('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options/{id}', [DropdownOptionController::class, 'destroy'])->name('dropdown-options.destroy');
     Route::post('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options/{id}/toggle-status', [DropdownOptionController::class, 'toggleStatus'])->name('dropdown-options.toggle-status');
     Route::post('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options/update-urutan', [DropdownOptionController::class, 'updateUrutan'])->name('dropdown-options.update-urutan');
+});
+
+// Penilaian Karyawan Routes (Super Admin, HRD & Supervisor)
+Route::middleware(['auth', 'role:super_admin,hrd,supervisor'])->prefix('penilaian')->name('penilaian.')->group(function () {
+    Route::get('/', [PenilaianController::class, 'index'])->name('index');
+    Route::get('/create', [PenilaianController::class, 'create'])->name('create');
+    Route::post('/', [PenilaianController::class, 'store'])->name('store');
+    Route::get('/{karyawanId}/{bulan}/{tahun}', [PenilaianController::class, 'show'])->name('show');
+    Route::get('/{karyawanId}/{bulan}/{tahun}/edit', [PenilaianController::class, 'edit'])->name('edit');
+    Route::put('/{karyawanId}/{bulan}/{tahun}', [PenilaianController::class, 'update'])->name('update');
+    Route::delete('/{karyawanId}/{bulan}/{tahun}', [PenilaianController::class, 'destroy'])->name('destroy');
 });
