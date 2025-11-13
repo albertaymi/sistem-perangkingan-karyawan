@@ -154,7 +154,16 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <div class="flex items-center justify-center gap-2">
+                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                    {{-- Button Kelola Sub-Kriteria --}}
+                                    <a href="{{ route('kriteria.detail', $item->id) }}"
+                                        class="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-150">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                        </svg>
+                                        Sub-Kriteria
+                                    </a>
+
                                     {{-- Button Edit --}}
                                     <button type="button" onclick="editKriteria({{ $item->id }})"
                                         class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150">

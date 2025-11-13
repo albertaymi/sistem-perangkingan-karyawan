@@ -84,6 +84,25 @@ class KriteriaController extends Controller
     }
 
     /**
+     * Show detail kriteria with sub-kriteria list.
+     */
+    public function detail($id)
+    {
+        $kriteria = SistemKriteria::where('level', 1)->findOrFail($id);
+
+        // Get all sub-kriteria for this kriteria
+        $subKriteria = SistemKriteria::where('id_parent', $kriteria->id)
+            ->where('level', 2)
+            ->orderBy('urutan', 'asc')
+            ->get();
+
+        // Hitung total bobot sub-kriteria
+        $totalBobot = $subKriteria->sum('bobot');
+
+        return view('kriteria.detail', compact('kriteria', 'subKriteria', 'totalBobot'));
+    }
+
+    /**
      * Get kriteria data for editing (JSON response for AJAX).
      */
     public function edit($id)

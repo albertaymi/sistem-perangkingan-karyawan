@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KriteriaController;
+use App\Http\Controllers\SubKriteriaController;
+use App\Http\Controllers\DropdownOptionController;
 
 // Redirect root ke login
 Route::get('/', fn() => redirect()->route('login'));
@@ -45,4 +47,22 @@ Route::middleware(['auth', 'role:super_admin,hrd'])->prefix('kriteria')->name('k
     Route::delete('/{id}', [KriteriaController::class, 'destroy'])->name('destroy');
     Route::post('/{id}/toggle-status', [KriteriaController::class, 'toggleStatus'])->name('toggle-status');
     Route::get('/total-bobot', [KriteriaController::class, 'getTotalBobot'])->name('total-bobot');
+
+    // Detail Kriteria & Sub-Kriteria Management
+    Route::get('/{kriteriaId}/detail', [KriteriaController::class, 'detail'])->name('detail');
+    Route::post('/{kriteriaId}/sub-kriteria', [SubKriteriaController::class, 'store'])->name('sub-kriteria.store');
+    Route::get('/{kriteriaId}/sub-kriteria/{id}/edit', [SubKriteriaController::class, 'edit'])->name('sub-kriteria.edit');
+    Route::put('/{kriteriaId}/sub-kriteria/{id}', [SubKriteriaController::class, 'update'])->name('sub-kriteria.update');
+    Route::delete('/{kriteriaId}/sub-kriteria/{id}', [SubKriteriaController::class, 'destroy'])->name('sub-kriteria.destroy');
+    Route::post('/{kriteriaId}/sub-kriteria/{id}/toggle-status', [SubKriteriaController::class, 'toggleStatus'])->name('sub-kriteria.toggle-status');
+    Route::get('/{kriteriaId}/sub-kriteria/total-bobot', [SubKriteriaController::class, 'getTotalBobot'])->name('sub-kriteria.total-bobot');
+
+    // Dropdown Options Management (Level 3)
+    Route::get('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options', [DropdownOptionController::class, 'index'])->name('dropdown-options.index');
+    Route::post('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options', [DropdownOptionController::class, 'store'])->name('dropdown-options.store');
+    Route::get('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options/{id}/edit', [DropdownOptionController::class, 'edit'])->name('dropdown-options.edit');
+    Route::put('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options/{id}', [DropdownOptionController::class, 'update'])->name('dropdown-options.update');
+    Route::delete('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options/{id}', [DropdownOptionController::class, 'destroy'])->name('dropdown-options.destroy');
+    Route::post('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options/{id}/toggle-status', [DropdownOptionController::class, 'toggleStatus'])->name('dropdown-options.toggle-status');
+    Route::post('/{kriteriaId}/sub-kriteria/{subKriteriaId}/options/update-urutan', [DropdownOptionController::class, 'updateUrutan'])->name('dropdown-options.update-urutan');
 });
