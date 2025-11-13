@@ -12,49 +12,64 @@ use Carbon\Carbon;
 class PenilaianController extends Controller
 {
     /**
-     * Display a listing of penilaian with filters.
-     * Menampilkan daftar penilaian yang sudah diinput dengan filter
+     * Display a listing of karyawan with their penilaian status.
+     * Menampilkan daftar karyawan dengan status kelengkapan penilaian per periode
      */
     public function index(Request $request)
     {
-        // Query base dengan eager loading
-        $query = Penilaian::with(['karyawan', 'kriteria', 'subKriteria', 'dinilaiOlehSupervisor'])
-            ->terbaru();
+        // Default periode = bulan dan tahun sekarang
+        $bulan = $request->query('bulan', date('n'));
+        $tahun = $request->query('tahun', date('Y'));
+        $divisi = $request->query('divisi');
 
-        // Filter by karyawan
-        if ($request->filled('karyawan_id')) {
-            $query->byKaryawan($request->karyawan_id);
+        // Get all active sub-kriteria (level 2) yang harus dinilai
+        $totalSubKriteria = SistemKriteria::where('level', 2)
+            ->where('is_active', true)
+            ->count();
+
+        // Get all karyawan yang bisa dinilai
+        $karyawanQuery = User::where('role', 'karyawan')
+            ->approved()
+            ->active();
+
+        // Filter by divisi
+        if ($divisi) {
+            $karyawanQuery->where('divisi', $divisi);
         }
 
-        // Filter by bulan
-        if ($request->filled('bulan')) {
-            $query->byBulan($request->bulan);
-        }
+        $karyawanList = $karyawanQuery->orderBy('nama', 'asc')->get();
 
-        // Filter by tahun
-        if ($request->filled('tahun')) {
-            $query->byTahun($request->tahun);
-        }
+        // Get penilaian count per karyawan untuk periode ini
+        $penilaianCounts = Penilaian::byPeriode($bulan, $tahun)
+            ->select('id_karyawan', DB::raw('COUNT(DISTINCT id_sub_kriteria) as jumlah_dinilai'))
+            ->groupBy('id_karyawan')
+            ->pluck('jumlah_dinilai', 'id_karyawan');
 
-        // Role-based filtering
-        if (auth()->user()->role === 'supervisor') {
-            // Supervisor hanya bisa lihat penilaian yang dia input
-            $query->bySupervisor(auth()->id());
-        }
+        // Build status tracking data
+        $statusData = $karyawanList->map(function ($karyawan) use ($penilaianCounts, $totalSubKriteria) {
+            $jumlahDinilai = $penilaianCounts->get($karyawan->id, 0);
+            $persentase = $totalSubKriteria > 0 ? round(($jumlahDinilai / $totalSubKriteria) * 100, 1) : 0;
 
-        // Get paginated results
-        $penilaian = $query->paginate(20);
-
-        // Group penilaian by karyawan + periode untuk tampilan yang lebih baik
-        $penilaianGrouped = $penilaian->groupBy(function ($item) {
-            return $item->id_karyawan . '_' . $item->bulan . '_' . $item->tahun;
+            return [
+                'karyawan' => $karyawan,
+                'jumlah_dinilai' => $jumlahDinilai,
+                'total_kriteria' => $totalSubKriteria,
+                'jumlah_belum' => $totalSubKriteria - $jumlahDinilai,
+                'persentase' => $persentase,
+                'status' => $jumlahDinilai === 0 ? 'belum_mulai' :
+                           ($jumlahDinilai >= $totalSubKriteria ? 'selesai' : 'dalam_proses')
+            ];
         });
 
-        // Get data for filters
-        $karyawanList = User::where('role', 'karyawan')
+        // Get available divisi from karyawan
+        $divisiList = User::where('role', 'karyawan')
             ->approved()
-            ->orderBy('nama', 'asc')
-            ->get();
+            ->active()
+            ->select('divisi')
+            ->distinct()
+            ->orderBy('divisi')
+            ->pluck('divisi')
+            ->filter();
 
         // Get available years from existing penilaian
         $tahunList = Penilaian::select('tahun')
@@ -62,7 +77,104 @@ class PenilaianController extends Controller
             ->orderBy('tahun', 'desc')
             ->pluck('tahun');
 
-        return view('penilaian.index', compact('penilaian', 'penilaianGrouped', 'karyawanList', 'tahunList'));
+        // Add current year if not exists
+        if (!$tahunList->contains(date('Y'))) {
+            $tahunList->prepend(date('Y'));
+        }
+
+        // Generate periode label
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
+
+        // Statistics
+        $stats = [
+            'total_karyawan' => $statusData->count(),
+            'selesai' => $statusData->where('status', 'selesai')->count(),
+            'dalam_proses' => $statusData->where('status', 'dalam_proses')->count(),
+            'belum_mulai' => $statusData->where('status', 'belum_mulai')->count(),
+            'persentase_selesai' => $statusData->count() > 0 ?
+                round(($statusData->where('status', 'selesai')->count() / $statusData->count()) * 100, 1) : 0
+        ];
+
+        return view('penilaian.index', compact(
+            'statusData',
+            'bulan',
+            'tahun',
+            'periodeLabel',
+            'divisiList',
+            'divisi',
+            'tahunList',
+            'stats',
+            'totalSubKriteria'
+        ));
+    }
+
+    /**
+     * Display overview of kriteria penilaian for specific karyawan.
+     * Menampilkan daftar kriteria dengan status sudah/belum dinilai per karyawan
+     */
+    public function overview($karyawanId, $bulan, $tahun)
+    {
+        $karyawan = User::findOrFail($karyawanId);
+
+        // Get all active kriteria dengan sub-kriteria
+        $kriteria = SistemKriteria::where('level', 1)
+            ->where('is_active', true)
+            ->with(['subKriteria' => function ($query) {
+                $query->where('is_active', true)->orderBy('urutan', 'asc');
+            }])
+            ->orderBy('urutan', 'asc')
+            ->get();
+
+        // Get existing penilaian untuk periode ini
+        $existingPenilaian = Penilaian::byKaryawan($karyawanId)
+            ->byPeriode($bulan, $tahun)
+            ->get()
+            ->keyBy('id_sub_kriteria');
+
+        // Calculate status for each kriteria
+        $kriteriaWithStatus = $kriteria->map(function ($item) use ($existingPenilaian) {
+            $totalSubKriteria = $item->subKriteria->count();
+            $dinilaiCount = 0;
+
+            foreach ($item->subKriteria as $sub) {
+                if ($existingPenilaian->has($sub->id)) {
+                    $dinilaiCount++;
+                }
+            }
+
+            $persentase = $totalSubKriteria > 0 ? round(($dinilaiCount / $totalSubKriteria) * 100, 1) : 0;
+
+            return [
+                'kriteria' => $item,
+                'total_sub' => $totalSubKriteria,
+                'dinilai' => $dinilaiCount,
+                'belum_dinilai' => $totalSubKriteria - $dinilaiCount,
+                'persentase' => $persentase,
+                'status' => $dinilaiCount === 0 ? 'belum' :
+                           ($dinilaiCount >= $totalSubKriteria ? 'selesai' : 'sebagian')
+            ];
+        });
+
+        // Generate periode label
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
+
+        return view('penilaian.overview', compact(
+            'karyawan',
+            'kriteriaWithStatus',
+            'bulan',
+            'tahun',
+            'periodeLabel'
+        ));
     }
 
     /**
@@ -394,5 +506,107 @@ class PenilaianController extends Controller
             return redirect()->route('penilaian.index')
                 ->with('error', 'Gagal menghapus penilaian: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Display status tracking dashboard
+     * Menampilkan dashboard tracking kelengkapan penilaian per karyawan per periode
+     */
+    public function statusTracking(Request $request)
+    {
+        // Default periode = bulan dan tahun sekarang
+        $bulan = $request->query('bulan', date('n'));
+        $tahun = $request->query('tahun', date('Y'));
+        $divisi = $request->query('divisi');
+
+        // Get all active sub-kriteria (level 2) yang harus dinilai
+        $totalSubKriteria = SistemKriteria::where('level', 2)
+            ->where('is_active', true)
+            ->count();
+
+        // Get all karyawan yang bisa dinilai
+        $karyawanQuery = User::where('role', 'karyawan')
+            ->approved()
+            ->active();
+
+        // Filter by divisi
+        if ($divisi) {
+            $karyawanQuery->where('divisi', $divisi);
+        }
+
+        $karyawanList = $karyawanQuery->orderBy('nama', 'asc')->get();
+
+        // Get penilaian count per karyawan untuk periode ini
+        $penilaianCounts = Penilaian::byPeriode($bulan, $tahun)
+            ->select('id_karyawan', DB::raw('COUNT(DISTINCT id_sub_kriteria) as jumlah_dinilai'))
+            ->groupBy('id_karyawan')
+            ->pluck('jumlah_dinilai', 'id_karyawan');
+
+        // Build status tracking data
+        $statusData = $karyawanList->map(function ($karyawan) use ($penilaianCounts, $totalSubKriteria) {
+            $jumlahDinilai = $penilaianCounts->get($karyawan->id, 0);
+            $persentase = $totalSubKriteria > 0 ? round(($jumlahDinilai / $totalSubKriteria) * 100, 1) : 0;
+
+            return [
+                'karyawan' => $karyawan,
+                'jumlah_dinilai' => $jumlahDinilai,
+                'total_kriteria' => $totalSubKriteria,
+                'jumlah_belum' => $totalSubKriteria - $jumlahDinilai,
+                'persentase' => $persentase,
+                'status' => $jumlahDinilai === 0 ? 'belum_mulai' :
+                           ($jumlahDinilai >= $totalSubKriteria ? 'selesai' : 'dalam_proses')
+            ];
+        });
+
+        // Get available divisi from karyawan
+        $divisiList = User::where('role', 'karyawan')
+            ->approved()
+            ->active()
+            ->select('divisi')
+            ->distinct()
+            ->orderBy('divisi')
+            ->pluck('divisi')
+            ->filter();
+
+        // Get available years from existing penilaian
+        $tahunList = Penilaian::select('tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun');
+
+        // Add current year if not exists
+        if (!$tahunList->contains(date('Y'))) {
+            $tahunList->prepend(date('Y'));
+        }
+
+        // Generate periode label
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
+
+        // Statistics
+        $stats = [
+            'total_karyawan' => $statusData->count(),
+            'selesai' => $statusData->where('status', 'selesai')->count(),
+            'dalam_proses' => $statusData->where('status', 'dalam_proses')->count(),
+            'belum_mulai' => $statusData->where('status', 'belum_mulai')->count(),
+            'persentase_selesai' => $statusData->count() > 0 ?
+                round(($statusData->where('status', 'selesai')->count() / $statusData->count()) * 100, 1) : 0
+        ];
+
+        return view('penilaian.status-tracking', compact(
+            'statusData',
+            'bulan',
+            'tahun',
+            'periodeLabel',
+            'divisiList',
+            'divisi',
+            'tahunList',
+            'stats',
+            'totalSubKriteria'
+        ));
     }
 }

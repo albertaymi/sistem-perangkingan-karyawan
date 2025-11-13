@@ -71,6 +71,7 @@ Route::middleware(['auth', 'role:super_admin,hrd'])->prefix('kriteria')->name('k
 // Penilaian Karyawan Routes (Super Admin, HRD & Supervisor)
 Route::middleware(['auth', 'role:super_admin,hrd,supervisor'])->prefix('penilaian')->name('penilaian.')->group(function () {
     Route::get('/', [PenilaianController::class, 'index'])->name('index');
+    Route::get('/{karyawanId}/{bulan}/{tahun}/overview', [PenilaianController::class, 'overview'])->name('overview');
     Route::get('/create', [PenilaianController::class, 'create'])->name('create');
     Route::post('/', [PenilaianController::class, 'store'])->name('store');
     Route::get('/{karyawanId}/{bulan}/{tahun}', [PenilaianController::class, 'show'])->name('show');
