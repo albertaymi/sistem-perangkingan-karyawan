@@ -41,7 +41,7 @@
                 {{ session('success') ?? session('error') }}
             </div>
             <button type="button"
-                class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8"
+                class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 cursor-pointer"
                 onclick="document.getElementById('toast-notification').remove()">
                 <span class="sr-only">Close</span>
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

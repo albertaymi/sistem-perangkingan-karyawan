@@ -75,7 +75,7 @@
                                     placeholder="Masukkan password Anda">
                                 {{-- Toggle Show/Hide Password --}}
                                 <button type="button" onclick="togglePassword()"
-                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150">
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150 cursor-pointer">
                                     <svg id="eye-icon" class="h-5 w-5" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -111,7 +111,7 @@
                         {{-- Submit Button --}}
                         <div>
                             <button type="submit"
-                                class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl cursor-pointer">
                                 Masuk
                             </button>
                         </div>
@@ -121,7 +121,7 @@
                             <p class="text-sm text-gray-600">
                                 Belum punya akun?
                                 <a href="{{ route('register') }}"
-                                    class="font-medium text-blue-600 hover:text-blue-500 transition duration-150 ease-in-out">
+                                    class="font-medium text-blue-600 hover:text-blue-500 transition duration-150 ease-in-out cursor-pointer">
                                     Daftar di sini
                                 </a>
                             </p>

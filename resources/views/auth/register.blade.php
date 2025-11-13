@@ -180,7 +180,7 @@
                                         placeholder="Masukkan password">
                                     <button type="button"
                                         onclick="togglePassword('password', 'eye-icon-password', 'eye-slash-icon-password')"
-                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150">
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150 cursor-pointer">
                                         <svg id="eye-icon-password" class="h-5 w-5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -219,7 +219,7 @@
                                         placeholder="Masukkan ulang password">
                                     <button type="button"
                                         onclick="togglePassword('password_confirmation', 'eye-icon-confirm', 'eye-slash-icon-confirm')"
-                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150">
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150 cursor-pointer">
                                         <svg id="eye-icon-confirm" class="h-5 w-5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -261,7 +261,7 @@
                         <!-- Submit Button -->
                         <div>
                             <button type="submit"
-                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 ease-in-out transform hover:scale-[1.02]">
+                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 ease-in-out transform hover:scale-[1.02] cursor-pointer">
                                 Daftar Sekarang
                             </button>
                         </div>
@@ -271,7 +271,7 @@
                             <p class="text-sm text-gray-600">
                                 Sudah memiliki akun?
                                 <a href="{{ route('login') }}"
-                                    class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-150">
+                                    class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-150 cursor-pointer">
                                     Login di sini
                                 </a>
                             </p>
