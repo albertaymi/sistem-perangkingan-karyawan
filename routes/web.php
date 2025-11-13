@@ -7,6 +7,7 @@ use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\SubKriteriaController;
 use App\Http\Controllers\DropdownOptionController;
 use App\Http\Controllers\PenilaianController;
+use App\Http\Controllers\PerhitunganController;
 
 // Redirect root ke login
 Route::get('/', fn() => redirect()->route('login'));
@@ -78,4 +79,19 @@ Route::middleware(['auth', 'role:super_admin,hrd,supervisor'])->prefix('penilaia
     Route::get('/{karyawanId}/{bulan}/{tahun}/edit', [PenilaianController::class, 'edit'])->name('edit');
     Route::put('/{karyawanId}/{bulan}/{tahun}', [PenilaianController::class, 'update'])->name('update');
     Route::delete('/{karyawanId}/{bulan}/{tahun}', [PenilaianController::class, 'destroy'])->name('destroy');
+});
+
+// Perhitungan & Ranking Routes (Super Admin & HRD only)
+Route::middleware(['auth', 'role:super_admin,hrd'])->prefix('perhitungan')->name('perhitungan.')->group(function () {
+    Route::get('/', [PerhitunganController::class, 'index'])->name('index');
+    Route::post('/calculate', [PerhitunganController::class, 'calculate'])->name('calculate');
+    Route::get('/detail/{id}', [PerhitunganController::class, 'detail'])->name('detail');
+    Route::get('/{bulan}/{tahun}', [PerhitunganController::class, 'show'])->name('show');
+});
+
+// Hasil Perangkingan Routes (Semua role yang login & approved dapat melihat)
+Route::middleware(['auth'])->prefix('ranking')->name('ranking.')->group(function () {
+    Route::get('/', [PerhitunganController::class, 'rankingIndex'])->name('index');
+    Route::get('/detail/{id}', [PerhitunganController::class, 'detail'])->name('detail');
+    Route::get('/{bulan}/{tahun}', [PerhitunganController::class, 'show'])->name('show');
 });

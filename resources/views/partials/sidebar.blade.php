@@ -74,7 +74,7 @@
                 {{-- Perangkingan --}}
                 <div class="pt-4">
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Ranking</p>
-                    <a href="#"
+                    <a href="{{ route('perhitungan.index') }}"
                         class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-150 cursor-pointer">
                         <svg class="h-5 w-5 mr-3 text-gray-500" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -89,7 +89,7 @@
             {{-- Hasil Perangkingan --}}
             <div class="pt-4">
                 <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Laporan</p>
-                <a href="#"
+                <a href="{{ route('ranking.index') }}"
                     class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-150 cursor-pointer">
                     <svg class="h-5 w-5 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
