@@ -52,7 +52,7 @@ class PenilaianController extends Controller
 
         // Get data for filters
         $karyawanList = User::where('role', 'karyawan')
-            ->where('is_approved', true)
+            ->approved()
             ->orderBy('nama', 'asc')
             ->get();
 
@@ -73,7 +73,7 @@ class PenilaianController extends Controller
     {
         // Get karyawan list yang bisa dinilai
         $karyawanList = User::where('role', 'karyawan')
-            ->where('is_approved', true)
+            ->approved()
             ->orderBy('nama', 'asc')
             ->get();
 

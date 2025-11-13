@@ -39,7 +39,7 @@ return new class extends Migration
             $table->dateTime('tanggal_penilaian');
 
             // Tracking siapa yang input penilaian
-            $table->foreignId('dinilai_oleh_supervisor_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('dinilai_oleh_supervisor_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('created_by_super_admin_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('created_by_hrd_id')->nullable()->constrained('users')->cascadeOnDelete();
 

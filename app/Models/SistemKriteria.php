@@ -70,6 +70,28 @@ class SistemKriteria extends Model
     }
 
     /**
+     * Relasi: Sub-kriteria (level 2) dari kriteria utama
+     * Khusus untuk kriteria level 1
+     */
+    public function subKriteria()
+    {
+        return $this->hasMany(SistemKriteria::class, 'id_parent')
+            ->where('level', 2)
+            ->orderBy('urutan');
+    }
+
+    /**
+     * Relasi: Dropdown options (level 3) dari sub-kriteria
+     * Khusus untuk sub-kriteria level 2 dengan tipe_input = 'dropdown'
+     */
+    public function dropdownOptions()
+    {
+        return $this->hasMany(SistemKriteria::class, 'id_parent')
+            ->where('level', 3)
+            ->orderBy('urutan');
+    }
+
+    /**
      * Relasi: Get all descendants (recursive)
      * Untuk mendapatkan semua anak, cucu, dst
      */
