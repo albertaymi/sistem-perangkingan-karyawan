@@ -99,3 +99,12 @@ Route::middleware(['auth'])->prefix('ranking')->name('ranking.')->group(function
     Route::get('/export-pdf/{bulan}/{tahun}', [PerhitunganController::class, 'exportPDF'])->name('export.pdf');
     Route::get('/export-excel/{bulan}/{tahun}', [PerhitunganController::class, 'exportExcel'])->name('export.excel');
 });
+
+// Profile Routes (Semua role yang login dapat mengakses)
+Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function () {
+    Route::get('/', [App\Http\Controllers\ProfileController::class, 'index'])->name('index');
+    Route::get('/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('edit');
+    Route::put('/update', [App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+    Route::get('/change-password', [App\Http\Controllers\ProfileController::class, 'editPassword'])->name('edit-password');
+    Route::put('/update-password', [App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('update-password');
+});
