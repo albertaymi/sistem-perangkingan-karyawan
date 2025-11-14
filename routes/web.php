@@ -94,4 +94,8 @@ Route::middleware(['auth'])->prefix('ranking')->name('ranking.')->group(function
     Route::get('/', [PerhitunganController::class, 'rankingIndex'])->name('index');
     Route::get('/detail/{id}', [PerhitunganController::class, 'detail'])->name('detail');
     Route::get('/{bulan}/{tahun}', [PerhitunganController::class, 'show'])->name('show');
+
+    // Export routes
+    Route::get('/export-pdf/{bulan}/{tahun}', [PerhitunganController::class, 'exportPDF'])->name('export.pdf');
+    Route::get('/export-excel/{bulan}/{tahun}', [PerhitunganController::class, 'exportExcel'])->name('export.excel');
 });

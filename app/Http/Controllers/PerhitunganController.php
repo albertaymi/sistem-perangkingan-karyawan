@@ -9,6 +9,9 @@ use App\Models\User;
 use App\Models\SistemKriteria;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Exports\RankingExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PerhitunganController extends Controller
 {
@@ -408,5 +411,159 @@ class PerhitunganController extends Controller
     {
         // Redirect to calculate with same parameters
         return $this->calculate(new Request(['bulan' => $bulan, 'tahun' => $tahun]));
+    }
+
+    /**
+     * Export ranking to Excel
+     *
+     * Authorization:
+     * - Karyawan: hanya bisa export data pribadi
+     * - Admin/HRD/Supervisor: bisa export semua data
+     */
+    public function exportExcel($bulan, $tahun)
+    {
+        // Get periode label
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
+
+        // Cek apakah ranking sudah di-generate
+        if (!HasilTopsis::byPeriode($bulan, $tahun)->exists()) {
+            return redirect()->back()
+                ->with('error', 'Ranking untuk periode ini belum di-generate.');
+        }
+
+        // Tentukan apakah export pribadi atau semua
+        $idKaryawan = null;
+        if (auth()->user()->isKaryawan()) {
+            $idKaryawan = auth()->id();
+        }
+
+        $fileName = 'Ranking_' . $periodeLabel . ($idKaryawan ? '_' . auth()->user()->nama : '') . '.xlsx';
+
+        return Excel::download(
+            new RankingExport($bulan, $tahun, $periodeLabel, $idKaryawan),
+            $fileName
+        );
+    }
+
+    /**
+     * Export ranking to PDF
+     *
+     * Authorization:
+     * - Karyawan: hanya bisa export data pribadi (laporan personal)
+     * - Admin/HRD/Supervisor: bisa export semua data (laporan lengkap)
+     */
+    public function exportPDF($bulan, $tahun)
+    {
+        // Get periode label
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
+
+        // Cek apakah ranking sudah di-generate
+        if (!HasilTopsis::byPeriode($bulan, $tahun)->exists()) {
+            return redirect()->back()
+                ->with('error', 'Ranking untuk periode ini belum di-generate.');
+        }
+
+        // Jika karyawan, export laporan pribadi
+        if (auth()->user()->isKaryawan()) {
+            return $this->exportPersonalPDF($bulan, $tahun, $periodeLabel);
+        }
+
+        // Jika admin/HRD/supervisor, export laporan lengkap
+        return $this->exportFullPDF($bulan, $tahun, $periodeLabel);
+    }
+
+    /**
+     * Export personal ranking report to PDF (untuk karyawan)
+     */
+    private function exportPersonalPDF($bulan, $tahun, $periodeLabel)
+    {
+        // Get hasil untuk karyawan yang login
+        $hasil = HasilTopsis::with('karyawan')
+            ->byPeriode($bulan, $tahun)
+            ->where('id_karyawan', auth()->id())
+            ->first();
+
+        if (!$hasil) {
+            return redirect()->back()
+                ->with('error', 'Data ranking Anda tidak ditemukan untuk periode ini.');
+        }
+
+        // Get total karyawan untuk konteks
+        $totalKaryawan = HasilTopsis::byPeriode($bulan, $tahun)->count();
+
+        // Get detail perhitungan
+        $detailPerhitungan = $hasil->detail_perhitungan;
+
+        // Get kriteria dengan nilai
+        $kriteria = SistemKriteria::where('level', 1)->orderBy('urutan')->get();
+        $kriteriaScores = [];
+
+        foreach ($kriteria as $k) {
+            $kriteriaScores[] = [
+                'nama' => $k->nama_kriteria,
+                'bobot' => $k->bobot,
+                'tipe' => $k->tipe === 'benefit' ? 'Benefit' : 'Cost',
+                'nilai' => number_format($detailPerhitungan['decision_matrix'][$k->nama_kriteria] ?? 0, 2),
+            ];
+        }
+
+        // Generate PDF
+        $pdf = Pdf::loadView('exports.ranking-personal-pdf', compact(
+            'hasil',
+            'periodeLabel',
+            'totalKaryawan',
+            'detailPerhitungan',
+            'kriteriaScores'
+        ));
+
+        $pdf->setPaper('a4', 'portrait');
+
+        $fileName = 'Laporan_Ranking_' . auth()->user()->nama . '_' . $periodeLabel . '.pdf';
+
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * Export full ranking report to PDF (untuk admin/HRD/supervisor)
+     */
+    private function exportFullPDF($bulan, $tahun, $periodeLabel)
+    {
+        // Get all hasil ranking untuk periode ini
+        $hasilRanking = HasilTopsis::with('karyawan')
+            ->byPeriode($bulan, $tahun)
+            ->orderedByRanking()
+            ->get();
+
+        // Get info generate
+        $latestHasil = HasilTopsis::byPeriode($bulan, $tahun)
+            ->orderBy('tanggal_generate', 'desc')
+            ->first();
+
+        $tanggalGenerate = $latestHasil->tanggal_generate;
+        $generatedBy = $latestHasil->generatedBySuperAdmin ?? $latestHasil->generatedByHRD;
+
+        // Generate PDF
+        $pdf = Pdf::loadView('exports.ranking-full-pdf', compact(
+            'hasilRanking',
+            'periodeLabel',
+            'tanggalGenerate',
+            'generatedBy'
+        ));
+
+        $pdf->setPaper('a4', 'landscape');
+
+        $fileName = 'Laporan_Ranking_Lengkap_' . $periodeLabel . '.pdf';
+
+        return $pdf->download($fileName);
     }
 }
