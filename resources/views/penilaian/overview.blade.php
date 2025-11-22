@@ -105,7 +105,7 @@
                             <div class="flex items-center gap-6 mb-4">
                                 <div class="text-sm">
                                     <span class="text-gray-600">Bobot:</span>
-                                    <span class="font-semibold text-gray-900">{{ $data['kriteria']->bobot }}%</span>
+                                    <span class="font-semibold text-gray-900">{{ number_format($data['kriteria']->bobot, 0) }}%</span>
                                 </div>
                                 <div class="text-sm">
                                     <span class="text-gray-600">Tipe:</span>

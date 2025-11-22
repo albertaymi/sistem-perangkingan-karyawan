@@ -210,7 +210,7 @@
                                 <div class="text-right">
                                     <span
                                         class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-full">
-                                        Bobot: {{ $kriteriaInfo->bobot ?? '0' }}%
+                                        Bobot: {{ number_format($kriteriaInfo->bobot ?? 0, 0) }}%
                                     </span>
                                     <p class="text-xs text-gray-600 mt-2">{{ $countSubKriteria }} Sub-Kriteria</p>
                                 </div>
@@ -268,7 +268,7 @@
                                             <td class="px-6 py-4 text-center">
                                                 <span
                                                     class="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-700 text-xs font-medium rounded">
-                                                    {{ $item->subKriteria->bobot ?? '0' }}%
+                                                    {{ number_format($item->subKriteria->bobot ?? 0, 0) }}%
                                                 </span>
                                             </td>
 
@@ -320,7 +320,7 @@
                                                 <div class="flex flex-col items-center justify-center">
                                                     <!-- Numeric Value -->
                                                     <span class="text-lg font-bold text-gray-900">
-                                                        {{ number_format($item->nilai, 2) }}
+                                                        {{ number_format($item->nilai, 0) }}
                                                     </span>
 
                                                     <!-- Visual Representation -->
@@ -360,7 +360,7 @@
                                         <td class="px-6 py-3 text-center">
                                             <span
                                                 class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-base font-bold rounded">
-                                                {{ $countSubKriteria > 0 ? number_format($totalNilai / $countSubKriteria, 2) : '0.00' }}
+                                                {{ $countSubKriteria > 0 ? number_format($totalNilai / $countSubKriteria, 0) : '0' }}
                                             </span>
                                         </td>
                                         <td></td>

@@ -143,7 +143,7 @@
                                         </div>
                                         <span
                                             class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-                                            Bobot: {{ $kriteriaItem->bobot }}%
+                                            Bobot: {{ number_format($kriteriaItem->bobot, 0) }}%
                                         </span>
                                     </div>
                                 </div>
@@ -165,7 +165,7 @@
                                                 </div>
                                                 <span
                                                     class="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-700 text-xs font-medium rounded ml-3">
-                                                    Bobot: {{ $subItem->bobot }}%
+                                                    Bobot: {{ number_format($subItem->bobot, 0) }}%
                                                 </span>
                                             </div>
 

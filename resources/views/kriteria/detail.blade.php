@@ -73,7 +73,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 mb-1">Bobot Kriteria</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ number_format($kriteria->bobot, 2) }}%</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ number_format($kriteria->bobot, 0) }}%</p>
                 </div>
                 <div class="p-3 bg-blue-100 rounded-full">
                     <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +92,7 @@
                     <p class="text-sm font-medium text-gray-600 mb-1">Total Bobot Sub-Kriteria</p>
                     <p
                         class="text-3xl font-bold {{ $totalBobot == 100 ? 'text-green-600' : ($totalBobot > 100 ? 'text-red-600' : 'text-yellow-600') }}">
-                        {{ number_format($totalBobot, 2) }}%
+                        {{ number_format($totalBobot, 0) }}%
                     </p>
                     @if ($totalBobot == 100)
                         <span
@@ -112,7 +112,7 @@
                     @else
                         <span
                             class="inline-flex items-center mt-2 px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                            Sisa: {{ number_format(100 - $totalBobot, 2) }}%
+                            Sisa: {{ number_format(100 - $totalBobot, 0) }}%
                         </span>
                     @endif
                 </div>
@@ -235,7 +235,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-gray-900">{{ number_format($item->bobot, 2) }}%
+                                <div class="text-sm font-semibold text-gray-900">{{ number_format($item->bobot, 0) }}%
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -457,9 +457,9 @@
                             </div>
                         </div>
                         <p class="mt-1 text-xs text-gray-500">
-                            Total bobot saat ini: <strong>{{ number_format($totalBobot, 2) }}%</strong> |
+                            Total bobot saat ini: <strong>{{ number_format($totalBobot, 0) }}%</strong> |
                             Sisa: <strong
-                                class="{{ 100 - $totalBobot > 0 ? 'text-green-600' : 'text-red-600' }}">{{ number_format(100 - $totalBobot, 2) }}%</strong>
+                                class="{{ 100 - $totalBobot > 0 ? 'text-green-600' : 'text-red-600' }}">{{ number_format(100 - $totalBobot, 0) }}%</strong>
                         </p>
                     </div>
 
@@ -937,9 +937,9 @@
                         document.getElementById('nama_kriteria_edit').value = subKriteria.nama_kriteria;
                         document.getElementById('deskripsi_edit').value = subKriteria.deskripsi || '';
                         document.getElementById('tipe_input_edit').value = subKriteria.tipe_input;
-                        document.getElementById('nilai_min_edit').value = subKriteria.nilai_min || '';
-                        document.getElementById('nilai_max_edit').value = subKriteria.nilai_max || '';
-                        document.getElementById('bobot_edit').value = subKriteria.bobot;
+                        document.getElementById('nilai_min_edit').value = subKriteria.nilai_min !== null ? subKriteria.nilai_min : '';
+                        document.getElementById('nilai_max_edit').value = subKriteria.nilai_max !== null ? subKriteria.nilai_max : '';
+                        document.getElementById('bobot_edit').value = Math.round(subKriteria.bobot);
 
                         // Toggle range fields
                         toggleRangeFields('edit');
@@ -952,12 +952,12 @@
                         fetch(`/kriteria/${kriteriaId}/sub-kriteria/total-bobot?exclude_id=${subKriteria.id}`)
                             .then(response => response.json())
                             .then(bobotData => {
-                                const sisaBobot = bobotData.sisa_bobot;
-                                const totalBobot = bobotData.total_bobot;
+                                const sisaBobot = Math.round(bobotData.sisa_bobot);
+                                const totalBobot = Math.round(bobotData.total_bobot);
                                 const colorClass = sisaBobot > 0 ? 'text-green-600' : 'text-red-600';
                                 document.getElementById('info-bobot-edit').innerHTML = `
-                                    Total bobot sub-kriteria lain: <strong>${totalBobot.toFixed(2)}%</strong> |
-                                    Sisa: <strong class="${colorClass}">${sisaBobot.toFixed(2)}%</strong>
+                                    Total bobot sub-kriteria lain: <strong>${totalBobot}%</strong> |
+                                    Sisa: <strong class="${colorClass}">${sisaBobot}%</strong>
                                 `;
                             });
 

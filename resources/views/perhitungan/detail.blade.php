@@ -123,7 +123,7 @@
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <h4 class="text-sm font-medium text-gray-700 mb-1">{{ $namaKriteria }}</h4>
-                                <div class="text-2xl font-bold text-gray-900">{{ number_format($nilai, 2) }}</div>
+                                <div class="text-2xl font-bold text-gray-900">{{ number_format($nilai, 0) }}</div>
                             </div>
                             <div
                                 class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
@@ -168,7 +168,7 @@
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Kriteria #{{ $kriteriaId }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                                    {{ number_format($nilai, 4) }}
+                                    {{ number_format($nilai, 0) }}
                                 </td>
                             </tr>
                         @endforeach

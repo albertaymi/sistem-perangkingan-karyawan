@@ -40,10 +40,10 @@ class SistemKriteria extends Model
      * Casting tipe data
      */
     protected $casts = [
-        'bobot' => 'decimal:2',
-        'nilai_min' => 'decimal:2',
-        'nilai_max' => 'decimal:2',
-        'nilai_tetap' => 'decimal:2',
+        'bobot' => 'integer',
+        'nilai_min' => 'integer',
+        'nilai_max' => 'integer',
+        'nilai_tetap' => 'integer',
         'level' => 'integer',
         'urutan' => 'integer',
         'is_active' => 'boolean',

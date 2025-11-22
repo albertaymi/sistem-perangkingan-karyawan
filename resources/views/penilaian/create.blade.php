@@ -199,7 +199,7 @@
                                     class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $kriteriaItem->tipe_kriteria === 'benefit' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                     {{ ucfirst($kriteriaItem->tipe_kriteria) }}
                                 </span>
-                                <p class="text-xs text-gray-500 mt-1">Bobot: {{ number_format($kriteriaItem->bobot, 2) }}%
+                                <p class="text-xs text-gray-500 mt-1">Bobot: {{ number_format($kriteriaItem->bobot, 0) }}%
                                 </p>
                             </div>
                         </div>
@@ -214,7 +214,7 @@
                                         {{ $subItem->nama_kriteria }}
                                         <span class="text-red-500">*</span>
                                         <span class="ml-2 text-xs font-normal text-gray-500">(Bobot:
-                                            {{ number_format($subItem->bobot, 2) }}%)</span>
+                                            {{ number_format($subItem->bobot, 0) }}%)</span>
                                     </label>
                                     @if ($subItem->deskripsi)
                                         <p class="text-xs text-gray-600 mb-2">{{ $subItem->deskripsi }}</p>

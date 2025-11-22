@@ -511,9 +511,9 @@ class PerhitunganController extends Controller
         foreach ($kriteria as $k) {
             $kriteriaScores[] = [
                 'nama' => $k->nama_kriteria,
-                'bobot' => $k->bobot,
+                'bobot' => number_format($k->bobot, 0),
                 'tipe' => $k->tipe === 'benefit' ? 'Benefit' : 'Cost',
-                'nilai' => number_format($detailPerhitungan['decision_matrix'][$k->nama_kriteria] ?? 0, 2),
+                'nilai' => number_format($detailPerhitungan['decision_matrix'][$k->nama_kriteria] ?? 0, 0),
             ];
         }
 
