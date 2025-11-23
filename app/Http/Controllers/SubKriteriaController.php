@@ -15,6 +15,12 @@ class SubKriteriaController extends Controller
     {
         $kriteria = SistemKriteria::where('level', 1)->findOrFail($kriteriaId);
 
+        // Validasi: Kriteria tidak boleh sudah memiliki tipe input
+        if ($kriteria->tipe_input) {
+            return redirect()->route('kriteria.detail', $kriteriaId)
+                ->with('error', 'Tidak dapat menambahkan sub-kriteria karena kriteria ini sudah memiliki tipe input (' . $kriteria->tipe_input . '). Silakan ubah tipe input kriteria menjadi kosong terlebih dahulu.');
+        }
+
         $request->validate([
             'nama_kriteria' => 'required|string|max:100',
             'deskripsi' => 'nullable|string',

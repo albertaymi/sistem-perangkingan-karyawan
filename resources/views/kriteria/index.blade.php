@@ -243,13 +243,21 @@
                                 <div class="flex items-center justify-center gap-2 flex-wrap">
                                     {{-- Button Kelola Sub-Kriteria --}}
                                     <a href="{{ route('kriteria.detail', $item->id) }}"
-                                        class="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-150 cursor-pointer">
+                                        class="inline-flex items-center px-3 py-1.5 {{ $item->tipe_input ? 'bg-gray-400' : 'bg-purple-600 hover:bg-purple-700' }} text-white text-xs font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-150 cursor-pointer"
+                                        @if ($item->tipe_input) title="Kriteria ini memiliki tipe input ({{ $item->tipe_input }}). Sub-kriteria tidak dapat ditambahkan." @endif>
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
                                         </svg>
                                         Sub-Kriteria
+                                        @if ($item->tipe_input)
+                                            <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        @endif
                                     </a>
 
                                     {{-- Button Edit --}}

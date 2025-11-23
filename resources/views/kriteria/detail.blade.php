@@ -38,9 +38,9 @@
 
     {{-- Info Kriteria --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {{-- Card Tipe Kriteria --}}
+        {{-- Card Tipe Kriteria & Input --}}
         <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
+            <div class="space-y-3">
                 <div>
                     <p class="text-sm font-medium text-gray-600 mb-1">Tipe Kriteria</p>
                     @if ($kriteria->tipe_kriteria === 'benefit')
@@ -63,6 +63,29 @@
                             </svg>
                             Cost
                         </div>
+                    @endif
+                </div>
+
+                <div class="pt-2 border-t border-gray-200">
+                    <p class="text-sm font-medium text-gray-600 mb-1">Tipe Input</p>
+                    @if ($kriteria->tipe_input)
+                        <div
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            @if ($kriteria->tipe_input === 'angka')
+                                Input Angka
+                            @elseif($kriteria->tipe_input === 'rating')
+                                Rating Scale
+                            @elseif($kriteria->tipe_input === 'dropdown')
+                                Dropdown
+                            @endif
+                        </div>
+                    @else
+                        <span class="text-xs text-gray-500 italic">Menggunakan Sub-Kriteria</span>
                     @endif
                 </div>
             </div>
@@ -121,17 +144,82 @@
     </div>
 
     {{-- Action Button --}}
-    <div class="mb-6 flex justify-between items-center">
-        <div class="text-sm text-gray-600">
-            Total: <span class="font-semibold text-gray-900">{{ $subKriteria->count() }}</span> sub-kriteria
-        </div>
-        <button type="button" data-modal-target="modal-tambah-sub-kriteria" data-modal-toggle="modal-tambah-sub-kriteria"
-            class="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-150 shadow-sm cursor-pointer">
-            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Tambah Sub-Kriteria
-        </button>
+    <div class="mb-6">
+        @if ($kriteria->tipe_input)
+            {{-- Peringatan jika kriteria sudah memiliki tipe input --}}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-yellow-700 font-medium">
+                            Kriteria ini sudah memiliki tipe input:
+                            <span class="font-semibold">
+                                @if ($kriteria->tipe_input === 'angka')
+                                    Input Angka
+                                @elseif($kriteria->tipe_input === 'rating')
+                                    Rating Scale
+                                @elseif($kriteria->tipe_input === 'dropdown')
+                                    Dropdown Selection
+                                @endif
+                            </span>
+                        </p>
+                        <p class="mt-1 text-xs text-yellow-600">
+                            Untuk dapat menambahkan sub-kriteria, Anda harus mengubah tipe input kriteria menjadi kosong
+                            terlebih dahulu melalui menu Edit Kriteria.
+                        </p>
+                    </div>
+                    <div class="ml-3">
+                        <a href="{{ route('kriteria.index') }}"
+                            class="inline-flex items-center px-3 py-1.5 border border-yellow-300 text-xs font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                            Edit Kriteria
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Button disabled --}}
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    Total: <span class="font-semibold text-gray-900">{{ $subKriteria->count() }}</span> sub-kriteria
+                </div>
+                <button type="button" disabled
+                    class="px-6 py-2.5 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed opacity-60"
+                    title="Tidak dapat menambahkan sub-kriteria karena kriteria sudah memiliki tipe input">
+                    <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Tambah Sub-Kriteria (Tidak Tersedia)
+                </button>
+            </div>
+        @else
+            {{-- Button aktif jika kriteria belum memiliki tipe input --}}
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    Total: <span class="font-semibold text-gray-900">{{ $subKriteria->count() }}</span> sub-kriteria
+                </div>
+                <button type="button" data-modal-target="modal-tambah-sub-kriteria"
+                    data-modal-toggle="modal-tambah-sub-kriteria"
+                    class="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-150 shadow-sm cursor-pointer">
+                    <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Tambah Sub-Kriteria
+                </button>
+            </div>
+        @endif
     </div>
 
     {{-- Table Section --}}
