@@ -35,21 +35,21 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-3xl font-bold text-gray-900">
-                    @if($singleKriteria)
+                    @if ($singleKriteria)
                         Penilaian: {{ $singleKriteria->nama_kriteria }}
                     @else
                         Tambah Penilaian Karyawan
                     @endif
                 </h2>
                 <p class="mt-2 text-sm text-gray-600">
-                    @if($singleKriteria)
+                    @if ($singleKriteria)
                         Input penilaian untuk kriteria {{ $singleKriteria->nama_kriteria }} - {{ $karyawan->nama ?? '' }}
                     @else
                         Input penilaian kinerja karyawan berdasarkan kriteria yang telah ditentukan
                     @endif
                 </p>
             </div>
-            @if($singleKriteria && $karyawan)
+            @if ($singleKriteria && $karyawan)
                 <a href="{{ route('penilaian.overview', ['karyawanId' => $karyawan->id, 'bulan' => $bulan, 'tahun' => $tahun]) }}"
                     class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
                     <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,82 +62,82 @@
     </div>
 
     {{-- Selection Form: Pilih Karyawan & Periode (Hide if single kriteria mode) --}}
-    @if(!$singleKriteria)
+    @if (!$singleKriteria)
         <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 mb-6">
             <div class="p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Pilih Karyawan & Periode Penilaian</h3>
 
                 <form method="GET" action="{{ route('penilaian.create') }}" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {{-- Pilih Karyawan --}}
-                    <div>
-                        <label for="karyawan_id" class="block text-sm font-medium text-gray-700 mb-2">
-                            Karyawan <span class="text-red-500">*</span>
-                        </label>
-                        <select name="karyawan_id" id="karyawan_id" required
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                            <option value="">Pilih Karyawan</option>
-                            @foreach ($karyawanList as $karyawanItem)
-                                <option value="{{ $karyawanItem->id }}"
-                                    {{ request('karyawan_id') == $karyawanItem->id ? 'selected' : '' }}>
-                                    {{ $karyawanItem->nama }} ({{ $karyawanItem->email }})
-                                </option>
-                            @endforeach
-                        </select>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {{-- Pilih Karyawan --}}
+                        <div>
+                            <label for="karyawan_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                Karyawan <span class="text-red-500">*</span>
+                            </label>
+                            <select name="karyawan_id" id="karyawan_id" required
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <option value="">Pilih Karyawan</option>
+                                @foreach ($karyawanList as $karyawanItem)
+                                    <option value="{{ $karyawanItem->id }}"
+                                        {{ request('karyawan_id') == $karyawanItem->id ? 'selected' : '' }}>
+                                        {{ $karyawanItem->nama }} ({{ $karyawanItem->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Pilih Bulan --}}
+                        <div>
+                            <label for="bulan" class="block text-sm font-medium text-gray-700 mb-2">
+                                Bulan <span class="text-red-500">*</span>
+                            </label>
+                            <select name="bulan" id="bulan" required
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                @foreach (['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $index => $namaBulan)
+                                    <option value="{{ $index + 1 }}" {{ $bulan == $index + 1 ? 'selected' : '' }}>
+                                        {{ $namaBulan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Pilih Tahun --}}
+                        <div>
+                            <label for="tahun" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tahun <span class="text-red-500">*</span>
+                            </label>
+                            <select name="tahun" id="tahun" required
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                @for ($y = date('Y'); $y >= date('Y') - 5; $y--)
+                                    <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>
+                                        {{ $y }}
+                                    </option>
+                                @endfor
+                            </select>
+                        </div>
                     </div>
 
-                    {{-- Pilih Bulan --}}
-                    <div>
-                        <label for="bulan" class="block text-sm font-medium text-gray-700 mb-2">
-                            Bulan <span class="text-red-500">*</span>
-                        </label>
-                        <select name="bulan" id="bulan" required
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                            @foreach (['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $index => $namaBulan)
-                                <option value="{{ $index + 1 }}" {{ $bulan == $index + 1 ? 'selected' : '' }}>
-                                    {{ $namaBulan }}
-                                </option>
-                            @endforeach
-                        </select>
+                    <div class="flex items-center gap-3 pt-2">
+                        <button type="submit"
+                            class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 cursor-pointer">
+                            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                                </path>
+                            </svg>
+                            Load Form Penilaian
+                        </button>
+                        @if ($karyawan)
+                            <a href="{{ route('penilaian.create') }}"
+                                class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
+                                Reset
+                            </a>
+                        @endif
                     </div>
-
-                    {{-- Pilih Tahun --}}
-                    <div>
-                        <label for="tahun" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tahun <span class="text-red-500">*</span>
-                        </label>
-                        <select name="tahun" id="tahun" required
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                            @for ($y = date('Y'); $y >= date('Y') - 5; $y--)
-                                <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>
-                                    {{ $y }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3 pt-2">
-                    <button type="submit"
-                        class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 cursor-pointer">
-                        <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
-                            </path>
-                        </svg>
-                        Load Form Penilaian
-                    </button>
-                    @if ($karyawan)
-                        <a href="{{ route('penilaian.create') }}"
-                            class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
-                            Reset
-                        </a>
-                    @endif
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
-    </div>
     @endif
 
     @if ($karyawan && $kriteria->isNotEmpty())
@@ -193,7 +193,7 @@
             <input type="hidden" name="karyawan_id" value="{{ $karyawan->id }}">
             <input type="hidden" name="bulan" value="{{ $bulan }}">
             <input type="hidden" name="tahun" value="{{ $tahun }}">
-            @if($singleKriteria)
+            @if ($singleKriteria)
                 <input type="hidden" name="from_overview" value="1">
             @endif
 
@@ -226,56 +226,50 @@
                         </div>
                     </div>
 
-                    {{-- Sub-Kriteria List --}}
+                    {{-- Sub-Kriteria List OR Direct Input (if kriteria has tipe_input without sub-kriteria) --}}
                     <div class="p-6 space-y-6">
-                        @forelse($kriteriaItem->subKriteria as $subIndex => $subItem)
+                        @if ($kriteriaItem->tipe_input && $kriteriaItem->subKriteria->isEmpty())
+                            {{-- Single Kriteria Mode: Direct Input without sub-kriteria --}}
                             <div class="border-l-4 border-blue-500 pl-4">
                                 <div class="mb-3">
                                     <label class="block text-sm font-semibold text-gray-900 mb-1">
-                                        {{ $subItem->nama_kriteria }}
+                                        Nilai {{ $kriteriaItem->nama_kriteria }}
                                         <span class="text-red-500">*</span>
-                                        <span class="ml-2 text-xs font-normal text-gray-500">(Bobot:
-                                            {{ number_format($subItem->bobot, 0) }}%)</span>
                                     </label>
-                                    @if ($subItem->deskripsi)
-                                        <p class="text-xs text-gray-600 mb-2">{{ $subItem->deskripsi }}</p>
-                                    @endif
+                                    <p class="text-xs text-gray-600 mb-2">Input nilai langsung untuk kriteria ini (tidak
+                                        memiliki sub-kriteria)</p>
                                 </div>
 
                                 {{-- Hidden Fields --}}
-                                <input type="hidden"
-                                    name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][id_kriteria]"
+                                <input type="hidden" name="penilaian[{{ $kriteriaIndex }}_0][id_kriteria]"
                                     value="{{ $kriteriaItem->id }}">
-                                <input type="hidden"
-                                    name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][id_sub_kriteria]"
-                                    value="{{ $subItem->id }}">
+                                <input type="hidden" name="penilaian[{{ $kriteriaIndex }}_0][id_sub_kriteria]"
+                                    value="{{ $kriteriaItem->id }}">
 
                                 {{-- Dynamic Input Based on Tipe Input --}}
-                                @if ($subItem->tipe_input === 'angka')
+                                @if ($kriteriaItem->tipe_input === 'angka')
                                     {{-- Input Angka --}}
                                     <div>
-                                        <input type="number"
-                                            name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][nilai]"
-                                            id="nilai_{{ $kriteriaItem->id }}_{{ $subItem->id }}"
-                                            min="{{ $subItem->nilai_min }}" max="{{ $subItem->nilai_max }}"
+                                        <input type="number" name="penilaian[{{ $kriteriaIndex }}_0][nilai]"
+                                            id="nilai_{{ $kriteriaItem->id }}_{{ $kriteriaItem->id }}"
+                                            min="{{ $kriteriaItem->nilai_min }}" max="{{ $kriteriaItem->nilai_max }}"
                                             step="0.01"
-                                            value="{{ $existingPenilaian->get($subItem->id)->nilai ?? '' }}" required
+                                            value="{{ $existingPenilaian->get($kriteriaItem->id)->nilai ?? '' }}" required
                                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                            placeholder="Masukkan nilai ({{ $subItem->nilai_min }} - {{ $subItem->nilai_max }})">
+                                            placeholder="Masukkan nilai ({{ $kriteriaItem->nilai_min }} - {{ $kriteriaItem->nilai_max }})">
                                         <p class="mt-1 text-xs text-gray-500">
-                                            Range: {{ $subItem->nilai_min }} - {{ $subItem->nilai_max }}
+                                            Range: {{ $kriteriaItem->nilai_min }} - {{ $kriteriaItem->nilai_max }}
                                         </p>
                                     </div>
-                                @elseif($subItem->tipe_input === 'rating')
+                                @elseif($kriteriaItem->tipe_input === 'rating')
                                     {{-- Input Rating (Stars) --}}
                                     <div>
                                         <div class="flex items-center gap-2">
-                                            @for ($star = $subItem->nilai_min; $star <= $subItem->nilai_max; $star++)
+                                            @for ($star = $kriteriaItem->nilai_min; $star <= $kriteriaItem->nilai_max; $star++)
                                                 <label class="cursor-pointer">
-                                                    <input type="radio"
-                                                        name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][nilai]"
+                                                    <input type="radio" name="penilaian[{{ $kriteriaIndex }}_0][nilai]"
                                                         value="{{ $star }}"
-                                                        {{ ($existingPenilaian->get($subItem->id)->nilai ?? '') == $star ? 'checked' : '' }}
+                                                        {{ ($existingPenilaian->get($kriteriaItem->id)->nilai ?? '') == $star ? 'checked' : '' }}
                                                         required class="sr-only peer" onchange="updateStarDisplay(this)">
                                                     <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-300 transition-colors"
                                                         fill="currentColor" viewBox="0 0 20 20">
@@ -287,25 +281,26 @@
                                             @endfor
                                         </div>
                                         <p class="mt-2 text-xs text-gray-500">
-                                            Pilih rating dari {{ $subItem->nilai_min }} sampai {{ $subItem->nilai_max }}
+                                            Pilih rating dari {{ $kriteriaItem->nilai_min }} sampai
+                                            {{ $kriteriaItem->nilai_max }}
                                             bintang
                                         </p>
                                     </div>
-                                @elseif($subItem->tipe_input === 'dropdown')
+                                @elseif($kriteriaItem->tipe_input === 'dropdown')
                                     {{-- Input Dropdown --}}
                                     <div>
-                                        <select name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][nilai]"
-                                            id="nilai_{{ $kriteriaItem->id }}_{{ $subItem->id }}" required
+                                        <select name="penilaian[{{ $kriteriaIndex }}_0][nilai]"
+                                            id="nilai_{{ $kriteriaItem->id }}_{{ $kriteriaItem->id }}" required
                                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                             <option value="">Pilih opsi...</option>
-                                            @foreach ($subItem->dropdownOptions as $option)
+                                            @foreach ($kriteriaItem->dropdownOptions as $option)
                                                 <option value="{{ $option->nilai_tetap }}"
-                                                    {{ ($existingPenilaian->get($subItem->id)->nilai ?? '') == $option->nilai_tetap ? 'selected' : '' }}>
+                                                    {{ ($existingPenilaian->get($kriteriaItem->id)->nilai ?? '') == $option->nilai_tetap ? 'selected' : '' }}>
                                                     {{ $option->nama_kriteria }} (Nilai: {{ $option->nilai_tetap }})
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @if ($subItem->dropdownOptions->isEmpty())
+                                        @if ($kriteriaItem->dropdownOptions->isEmpty())
                                             <p class="mt-1 text-xs text-red-600">
                                                 <svg class="inline-block w-3 h-3 mr-1" fill="currentColor"
                                                     viewBox="0 0 20 20">
@@ -313,7 +308,7 @@
                                                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
                                                         clip-rule="evenodd"></path>
                                                 </svg>
-                                                Dropdown options belum tersedia untuk sub-kriteria ini
+                                                Dropdown options belum tersedia untuk kriteria ini
                                             </p>
                                         @endif
                                     </div>
@@ -324,16 +319,122 @@
                                     <label class="block text-xs font-medium text-gray-700 mb-1">
                                         Catatan (Optional)
                                     </label>
-                                    <textarea name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][catatan]" rows="2"
+                                    <textarea name="penilaian[{{ $kriteriaIndex }}_0][catatan]" rows="2"
                                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Tambahkan catatan jika diperlukan...">{{ $existingPenilaian->get($subItem->id)->catatan ?? '' }}</textarea>
+                                        placeholder="Tambahkan catatan jika diperlukan...">{{ $existingPenilaian->get($kriteriaItem->id)->catatan ?? '' }}</textarea>
                                 </div>
                             </div>
-                        @empty
-                            <div class="text-center py-8 text-gray-500">
-                                <p>Belum ada sub-kriteria untuk kriteria ini</p>
-                            </div>
-                        @endforelse
+                        @else
+                            {{-- Normal Mode: Loop through sub-kriteria --}}
+                            @forelse($kriteriaItem->subKriteria as $subIndex => $subItem)
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <div class="mb-3">
+                                        <label class="block text-sm font-semibold text-gray-900 mb-1">
+                                            {{ $subItem->nama_kriteria }}
+                                            <span class="text-red-500">*</span>
+                                            <span class="ml-2 text-xs font-normal text-gray-500">(Bobot:
+                                                {{ number_format($subItem->bobot, 0) }}%)</span>
+                                        </label>
+                                        @if ($subItem->deskripsi)
+                                            <p class="text-xs text-gray-600 mb-2">{{ $subItem->deskripsi }}</p>
+                                        @endif
+                                    </div>
+
+                                    {{-- Hidden Fields --}}
+                                    <input type="hidden"
+                                        name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][id_kriteria]"
+                                        value="{{ $kriteriaItem->id }}">
+                                    <input type="hidden"
+                                        name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][id_sub_kriteria]"
+                                        value="{{ $subItem->id }}">
+
+                                    {{-- Dynamic Input Based on Tipe Input --}}
+                                    @if ($subItem->tipe_input === 'angka')
+                                        {{-- Input Angka --}}
+                                        <div>
+                                            <input type="number"
+                                                name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][nilai]"
+                                                id="nilai_{{ $kriteriaItem->id }}_{{ $subItem->id }}"
+                                                min="{{ $subItem->nilai_min }}" max="{{ $subItem->nilai_max }}"
+                                                step="1"
+                                                value="{{ $existingPenilaian->get($subItem->id)->nilai ?? '' }}" required
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                placeholder="Masukkan nilai ({{ $subItem->nilai_min }} - {{ $subItem->nilai_max }})">
+                                            <p class="mt-1 text-xs text-gray-500">
+                                                Range: {{ $subItem->nilai_min }} - {{ $subItem->nilai_max }}
+                                            </p>
+                                        </div>
+                                    @elseif($subItem->tipe_input === 'rating')
+                                        {{-- Input Rating (Stars) --}}
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                @for ($star = $subItem->nilai_min; $star <= $subItem->nilai_max; $star++)
+                                                    <label class="cursor-pointer">
+                                                        <input type="radio"
+                                                            name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][nilai]"
+                                                            value="{{ $star }}"
+                                                            {{ ($existingPenilaian->get($subItem->id)->nilai ?? '') == $star ? 'checked' : '' }}
+                                                            required class="sr-only peer"
+                                                            onchange="updateStarDisplay(this)">
+                                                        <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-300 transition-colors"
+                                                            fill="currentColor" viewBox="0 0 20 20">
+                                                            <path
+                                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                                            </path>
+                                                        </svg>
+                                                    </label>
+                                                @endfor
+                                            </div>
+                                            <p class="mt-2 text-xs text-gray-500">
+                                                Pilih rating dari {{ $subItem->nilai_min }} sampai
+                                                {{ $subItem->nilai_max }}
+                                                bintang
+                                            </p>
+                                        </div>
+                                    @elseif($subItem->tipe_input === 'dropdown')
+                                        {{-- Input Dropdown --}}
+                                        <div>
+                                            <select name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][nilai]"
+                                                id="nilai_{{ $kriteriaItem->id }}_{{ $subItem->id }}" required
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                                <option value="">Pilih opsi...</option>
+                                                @foreach ($subItem->dropdownOptions as $option)
+                                                    <option value="{{ $option->nilai_tetap }}"
+                                                        {{ ($existingPenilaian->get($subItem->id)->nilai ?? '') == $option->nilai_tetap ? 'selected' : '' }}>
+                                                        {{ $option->nama_kriteria }} (Nilai: {{ $option->nilai_tetap }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @if ($subItem->dropdownOptions->isEmpty())
+                                                <p class="mt-1 text-xs text-red-600">
+                                                    <svg class="inline-block w-3 h-3 mr-1" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Dropdown options belum tersedia untuk sub-kriteria ini
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    {{-- Catatan (Optional) --}}
+                                    <div class="mt-3">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                                            Catatan (Optional)
+                                        </label>
+                                        <textarea name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][catatan]" rows="2"
+                                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="Tambahkan catatan jika diperlukan...">{{ $existingPenilaian->get($subItem->id)->catatan ?? '' }}</textarea>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-8 text-gray-500">
+                                    <p>Belum ada sub-kriteria untuk kriteria ini</p>
+                                </div>
+                            @endforelse
+                        @endif
                     </div>
                 </div>
             @endforeach
@@ -341,7 +442,7 @@
             {{-- Action Buttons --}}
             <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 p-6">
                 <div class="flex items-center justify-between gap-4">
-                    @if($singleKriteria)
+                    @if ($singleKriteria)
                         <a href="{{ route('penilaian.overview', ['karyawanId' => $karyawan->id, 'bulan' => $bulan, 'tahun' => $tahun]) }}"
                             class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
                             <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor"

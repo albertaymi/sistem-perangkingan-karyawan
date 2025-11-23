@@ -32,7 +32,7 @@ class PenilaianController extends Controller
             $subKriteriaQuery->whereHas('parent', function ($q) {
                 $q->where(function ($query) {
                     $query->where('assigned_to_supervisor_id', auth()->id())
-                          ->orWhereNull('assigned_to_supervisor_id');
+                        ->orWhereNull('assigned_to_supervisor_id');
                 });
             });
         }
@@ -68,8 +68,7 @@ class PenilaianController extends Controller
                 'total_kriteria' => $totalSubKriteria,
                 'jumlah_belum' => $totalSubKriteria - $jumlahDinilai,
                 'persentase' => $persentase,
-                'status' => $jumlahDinilai === 0 ? 'belum_mulai' :
-                           ($jumlahDinilai >= $totalSubKriteria ? 'selesai' : 'dalam_proses')
+                'status' => $jumlahDinilai === 0 ? 'belum_mulai' : ($jumlahDinilai >= $totalSubKriteria ? 'selesai' : 'dalam_proses')
             ];
         });
 
@@ -96,9 +95,18 @@ class PenilaianController extends Controller
 
         // Generate periode label
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -170,9 +178,8 @@ class PenilaianController extends Controller
             // Check if current user has access to this kriteria
             $hasAccess = true;
             if ($currentUser->isSupervisor()) {
-                // Supervisor has access if: assigned to them OR no assignment (null)
-                $hasAccess = $item->assigned_to_supervisor_id === $currentUser->id
-                          || $item->assigned_to_supervisor_id === null;
+                // Supervisor has access ONLY if assigned to them (not NULL)
+                $hasAccess = $item->assigned_to_supervisor_id === $currentUser->id;
             }
 
             return [
@@ -181,8 +188,7 @@ class PenilaianController extends Controller
                 'dinilai' => $dinilaiCount,
                 'belum_dinilai' => $totalSubKriteria - $dinilaiCount,
                 'persentase' => $persentase,
-                'status' => $dinilaiCount === 0 ? 'belum' :
-                           ($dinilaiCount >= $totalSubKriteria ? 'selesai' : 'sebagian'),
+                'status' => $dinilaiCount === 0 ? 'belum' : ($dinilaiCount >= $totalSubKriteria ? 'selesai' : 'sebagian'),
                 'has_access' => $hasAccess,
                 'assigned_supervisor' => $item->assignedSupervisor,
             ];
@@ -190,9 +196,18 @@ class PenilaianController extends Controller
 
         // Generate periode label
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -237,9 +252,18 @@ class PenilaianController extends Controller
 
             // Generate periode label
             $namaBulan = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
             $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -252,20 +276,23 @@ class PenilaianController extends Controller
 
                 // Check supervisor access
                 if (auth()->user()->isSupervisor()) {
-                    $kriteriaQuery->where(function ($q) {
-                        $q->where('assigned_to_supervisor_id', auth()->id())
-                          ->orWhereNull('assigned_to_supervisor_id');
-                    });
+                    $kriteriaQuery->where('assigned_to_supervisor_id', auth()->id());
                 }
 
                 $singleKriteria = $kriteriaQuery
-                    ->with(['subKriteria' => function ($query) {
-                        $query->where('is_active', true)
-                            ->with(['dropdownOptions' => function ($q) {
-                                $q->where('is_active', true)->orderBy('urutan', 'asc');
-                            }])
-                            ->orderBy('urutan', 'asc');
-                    }])
+                    ->with([
+                        'subKriteria' => function ($query) {
+                            $query->where('is_active', true)
+                                ->with(['dropdownOptions' => function ($q) {
+                                    $q->where('is_active', true)->orderBy('urutan', 'asc');
+                                }])
+                                ->orderBy('urutan', 'asc');
+                        },
+                        'dropdownOptions' => function ($q) {
+                            // Load dropdown options for kriteria with direct tipe_input (no sub-kriteria)
+                            $q->where('is_active', true)->orderBy('urutan', 'asc');
+                        }
+                    ])
                     ->first();
 
                 // If kriteria not found or no access, redirect back with error
@@ -279,7 +306,6 @@ class PenilaianController extends Controller
 
                 // Use single kriteria in array for view compatibility
                 $kriteria = collect([$singleKriteria]);
-
             } else {
                 // OLD FLOW: Get all kriteria (legacy flow)
                 $kriteriaQuery = SistemKriteria::where('level', 1)
@@ -287,20 +313,22 @@ class PenilaianController extends Controller
 
                 // If supervisor, only show assigned kriteria
                 if (auth()->user()->isSupervisor()) {
-                    $kriteriaQuery->where(function ($q) {
-                        $q->where('assigned_to_supervisor_id', auth()->id())
-                          ->orWhereNull('assigned_to_supervisor_id');
-                    });
+                    $kriteriaQuery->where('assigned_to_supervisor_id', auth()->id());
                 }
-
                 $kriteria = $kriteriaQuery
-                    ->with(['subKriteria' => function ($query) {
-                        $query->where('is_active', true)
-                            ->with(['dropdownOptions' => function ($q) {
-                                $q->where('is_active', true)->orderBy('urutan', 'asc');
-                            }])
-                            ->orderBy('urutan', 'asc');
-                    }])
+                    ->with([
+                        'subKriteria' => function ($query) {
+                            $query->where('is_active', true)
+                                ->with(['dropdownOptions' => function ($q) {
+                                    $q->where('is_active', true)->orderBy('urutan', 'asc');
+                                }])
+                                ->orderBy('urutan', 'asc');
+                        },
+                        'dropdownOptions' => function ($q) {
+                            // Load dropdown options for kriteria with direct tipe_input (no sub-kriteria)
+                            $q->where('is_active', true)->orderBy('urutan', 'asc');
+                        }
+                    ])
                     ->orderBy('urutan', 'asc')
                     ->get();
             }
@@ -365,16 +393,28 @@ class PenilaianController extends Controller
 
             // Generate periode label
             $namaBulan = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
             $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
-            // Delete existing penilaian untuk periode ini (jika ada, untuk prevent duplicate)
+            // Delete only existing penilaian for specific sub-kriteria being submitted
+            // (tidak delete semua periode, hanya yang sedang di-input)
+            $subKriteriaIds = collect($request->penilaian)->pluck('id_sub_kriteria')->toArray();
             Penilaian::byKaryawan($karyawanId)
                 ->byPeriode($bulan, $tahun)
-                ->forceDelete(); // Force delete karena mau re-insert
+                ->whereIn('id_sub_kriteria', $subKriteriaIds)
+                ->forceDelete();
 
             // Insert batch penilaian
             $insertedCount = 0;
@@ -409,7 +449,6 @@ class PenilaianController extends Controller
 
             return redirect()->route('penilaian.index')
                 ->with('success', "Berhasil menyimpan {$insertedCount} penilaian untuk periode {$periodeLabel}");
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -448,9 +487,18 @@ class PenilaianController extends Controller
 
         // Get periode info
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -531,9 +579,18 @@ class PenilaianController extends Controller
 
             // Generate periode label
             $namaBulan = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
             $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -566,7 +623,6 @@ class PenilaianController extends Controller
 
             return redirect()->route('penilaian.show', [$karyawanId, $bulan, $tahun])
                 ->with('success', "Berhasil mengupdate {$updatedCount} penilaian untuk periode {$periodeLabel}");
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -585,9 +641,18 @@ class PenilaianController extends Controller
         try {
             // Get periode label for message
             $namaBulan = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
             $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
