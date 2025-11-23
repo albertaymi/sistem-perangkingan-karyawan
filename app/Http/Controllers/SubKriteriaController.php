@@ -22,9 +22,6 @@ class SubKriteriaController extends Controller
             'tipe_input' => 'required|in:angka,rating,dropdown',
             'nilai_min' => 'nullable|numeric',
             'nilai_max' => 'nullable|numeric|gt:nilai_min',
-            'dropdown_options' => 'required_if:tipe_input,dropdown|array|min:2',
-            'dropdown_options.*.nama' => 'required_with:dropdown_options|string|max:100',
-            'dropdown_options.*.nilai_tetap' => 'required_with:dropdown_options|numeric',
         ], [
             'nama_kriteria.required' => 'Nama sub-kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama sub-kriteria maksimal 100 karakter',
@@ -37,11 +34,48 @@ class SubKriteriaController extends Controller
             'nilai_min.numeric' => 'Nilai min harus berupa angka',
             'nilai_max.numeric' => 'Nilai max harus berupa angka',
             'nilai_max.gt' => 'Nilai max harus lebih besar dari nilai min',
-            'dropdown_options.required_if' => 'Dropdown options wajib diisi untuk tipe input dropdown',
-            'dropdown_options.min' => 'Minimal 2 pilihan untuk dropdown options',
-            'dropdown_options.*.nama.required_with' => 'Nama option wajib diisi',
-            'dropdown_options.*.nilai_tetap.required_with' => 'Nilai tetap wajib diisi',
         ]);
+
+        // Custom validation for tipe_input specific requirements
+        if ($request->tipe_input === 'dropdown') {
+            // Validate dropdown options
+            if (!$request->has('dropdown_options') || !is_array($request->dropdown_options) || count($request->dropdown_options) < 2) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Tipe input dropdown memerlukan minimal 2 pilihan dropdown options.');
+            }
+
+            // Validate each dropdown option
+            foreach ($request->dropdown_options as $index => $option) {
+                if (empty($option['nama']) || trim($option['nama']) === '') {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Semua dropdown options harus memiliki nama yang valid.');
+                }
+                if (!isset($option['nilai_tetap']) || !is_numeric($option['nilai_tetap'])) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Semua dropdown options harus memiliki nilai tetap yang valid.');
+                }
+            }
+        } elseif ($request->tipe_input === 'angka' || $request->tipe_input === 'rating') {
+            // Validate nilai_min and nilai_max for angka and rating
+            if ($request->nilai_min === null || $request->nilai_min === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai minimum wajib diisi untuk tipe input angka atau rating.');
+            }
+            if ($request->nilai_max === null || $request->nilai_max === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai maximum wajib diisi untuk tipe input angka atau rating.');
+            }
+            if ($request->nilai_max <= $request->nilai_min) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai maximum harus lebih besar dari nilai minimum.');
+            }
+        }
 
         // Validasi total bobot sub-kriteria tidak boleh lebih dari 100%
         $currentTotalBobot = SistemKriteria::where('id_parent', $kriteriaId)
@@ -134,7 +168,7 @@ class SubKriteriaController extends Controller
                 'tipe_input' => $subKriteria->tipe_input,
                 'nilai_min' => $subKriteria->nilai_min,
                 'nilai_max' => $subKriteria->nilai_max,
-                'dropdown_options' => $subKriteria->dropdownOptions->map(function($option) {
+                'dropdown_options' => $subKriteria->dropdownOptions->map(function ($option) {
                     return [
                         'id' => $option->id,
                         'nama_kriteria' => $option->nama_kriteria,
@@ -164,9 +198,6 @@ class SubKriteriaController extends Controller
             'tipe_input' => 'required|in:angka,rating,dropdown',
             'nilai_min' => 'nullable|numeric',
             'nilai_max' => 'nullable|numeric|gt:nilai_min',
-            'dropdown_options' => 'required_if:tipe_input,dropdown|array|min:2',
-            'dropdown_options.*.nama' => 'required_with:dropdown_options|string|max:100',
-            'dropdown_options.*.nilai_tetap' => 'required_with:dropdown_options|numeric',
         ], [
             'nama_kriteria.required' => 'Nama sub-kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama sub-kriteria maksimal 100 karakter',
@@ -179,11 +210,48 @@ class SubKriteriaController extends Controller
             'nilai_min.numeric' => 'Nilai min harus berupa angka',
             'nilai_max.numeric' => 'Nilai max harus berupa angka',
             'nilai_max.gt' => 'Nilai max harus lebih besar dari nilai min',
-            'dropdown_options.required_if' => 'Dropdown options wajib diisi untuk tipe input dropdown',
-            'dropdown_options.min' => 'Minimal 2 pilihan untuk dropdown options',
-            'dropdown_options.*.nama.required_with' => 'Nama option wajib diisi',
-            'dropdown_options.*.nilai_tetap.required_with' => 'Nilai tetap wajib diisi',
         ]);
+
+        // Custom validation for tipe_input specific requirements
+        if ($request->tipe_input === 'dropdown') {
+            // Validate dropdown options
+            if (!$request->has('dropdown_options') || !is_array($request->dropdown_options) || count($request->dropdown_options) < 2) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Tipe input dropdown memerlukan minimal 2 pilihan dropdown options.');
+            }
+
+            // Validate each dropdown option
+            foreach ($request->dropdown_options as $index => $option) {
+                if (empty($option['nama']) || trim($option['nama']) === '') {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Semua dropdown options harus memiliki nama yang valid.');
+                }
+                if (!isset($option['nilai_tetap']) || !is_numeric($option['nilai_tetap'])) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Semua dropdown options harus memiliki nilai tetap yang valid.');
+                }
+            }
+        } elseif ($request->tipe_input === 'angka' || $request->tipe_input === 'rating') {
+            // Validate nilai_min and nilai_max for angka and rating
+            if ($request->nilai_min === null || $request->nilai_min === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai minimum wajib diisi untuk tipe input angka atau rating.');
+            }
+            if ($request->nilai_max === null || $request->nilai_max === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai maximum wajib diisi untuk tipe input angka atau rating.');
+            }
+            if ($request->nilai_max <= $request->nilai_min) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai maximum harus lebih besar dari nilai minimum.');
+            }
+        }
 
         // Validasi total bobot (exclude sub-kriteria yang sedang diedit)
         $currentTotalBobot = SistemKriteria::where('id_parent', $kriteriaId)

@@ -45,11 +45,8 @@ class KriteriaController extends Controller
             'bobot' => 'required|numeric|min:0|max:100',
             'assigned_to_supervisor_id' => 'nullable|exists:users,id',
             'tipe_input' => 'nullable|in:angka,rating,dropdown',
-            'nilai_min' => 'nullable|numeric|required_if:tipe_input,angka,rating',
-            'nilai_max' => 'nullable|numeric|required_if:tipe_input,angka,rating|gte:nilai_min',
-            'dropdown_options' => 'required_if:tipe_input,dropdown|array|min:2',
-            'dropdown_options.*.nama' => 'required_with:dropdown_options|string|max:100',
-            'dropdown_options.*.nilai_tetap' => 'required_with:dropdown_options|numeric',
+            'nilai_min' => 'nullable|numeric',
+            'nilai_max' => 'nullable|numeric|gt:nilai_min',
         ], [
             'nama_kriteria.required' => 'Nama kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama kriteria maksimal 100 karakter',
@@ -61,14 +58,51 @@ class KriteriaController extends Controller
             'bobot.max' => 'Bobot maksimal 100',
             'assigned_to_supervisor_id.exists' => 'Supervisor yang dipilih tidak valid',
             'tipe_input.in' => 'Tipe input harus: angka, rating, atau dropdown',
-            'nilai_min.required_if' => 'Nilai minimum wajib diisi untuk tipe input angka atau rating',
-            'nilai_max.required_if' => 'Nilai maximum wajib diisi untuk tipe input angka atau rating',
-            'nilai_max.gte' => 'Nilai maximum harus lebih besar atau sama dengan nilai minimum',
-            'dropdown_options.required_if' => 'Dropdown options wajib diisi untuk tipe input dropdown',
-            'dropdown_options.min' => 'Minimal 2 pilihan untuk dropdown options',
-            'dropdown_options.*.nama.required_with' => 'Nama option wajib diisi',
-            'dropdown_options.*.nilai_tetap.required_with' => 'Nilai tetap wajib diisi',
+            'nilai_min.numeric' => 'Nilai minimum harus berupa angka',
+            'nilai_max.numeric' => 'Nilai maximum harus berupa angka',
+            'nilai_max.gt' => 'Nilai maximum harus lebih besar dari nilai minimum',
         ]);
+
+        // Custom validation for tipe_input specific requirements
+        if ($request->tipe_input === 'dropdown') {
+            // Validate dropdown options
+            if (!$request->has('dropdown_options') || !is_array($request->dropdown_options) || count($request->dropdown_options) < 2) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Tipe input dropdown memerlukan minimal 2 pilihan dropdown options.');
+            }
+
+            // Validate each dropdown option
+            foreach ($request->dropdown_options as $index => $option) {
+                if (empty($option['nama']) || trim($option['nama']) === '') {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Semua dropdown options harus memiliki nama yang valid.');
+                }
+                if (!isset($option['nilai_tetap']) || !is_numeric($option['nilai_tetap'])) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Semua dropdown options harus memiliki nilai tetap yang valid.');
+                }
+            }
+        } elseif ($request->tipe_input === 'angka' || $request->tipe_input === 'rating') {
+            // Validate nilai_min and nilai_max for angka and rating
+            if ($request->nilai_min === null || $request->nilai_min === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai minimum wajib diisi untuk tipe input angka atau rating.');
+            }
+            if ($request->nilai_max === null || $request->nilai_max === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai maximum wajib diisi untuk tipe input angka atau rating.');
+            }
+            if ($request->nilai_max <= $request->nilai_min) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai maximum harus lebih besar dari nilai minimum.');
+            }
+        }
 
         // Validasi tambahan: Jika assign ke supervisor, pastikan user adalah supervisor
         if ($request->filled('assigned_to_supervisor_id')) {
@@ -178,7 +212,7 @@ class KriteriaController extends Controller
                 'tipe_input' => $kriteria->tipe_input,
                 'nilai_min' => $kriteria->nilai_min,
                 'nilai_max' => $kriteria->nilai_max,
-                'dropdown_options' => $kriteria->dropdownOptions->map(function($option) {
+                'dropdown_options' => $kriteria->dropdownOptions->map(function ($option) {
                     return [
                         'id' => $option->id,
                         'nama_kriteria' => $option->nama_kriteria,
@@ -205,11 +239,8 @@ class KriteriaController extends Controller
             'bobot' => 'required|numeric|min:0|max:100',
             'assigned_to_supervisor_id' => 'nullable|exists:users,id',
             'tipe_input' => 'nullable|in:angka,rating,dropdown',
-            'nilai_min' => 'nullable|numeric|required_if:tipe_input,angka,rating',
-            'nilai_max' => 'nullable|numeric|required_if:tipe_input,angka,rating|gte:nilai_min',
-            'dropdown_options' => 'required_if:tipe_input,dropdown|array|min:2',
-            'dropdown_options.*.nama' => 'required_with:dropdown_options|string|max:100',
-            'dropdown_options.*.nilai_tetap' => 'required_with:dropdown_options|numeric',
+            'nilai_min' => 'nullable|numeric',
+            'nilai_max' => 'nullable|numeric|gt:nilai_min',
         ], [
             'nama_kriteria.required' => 'Nama kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama kriteria maksimal 100 karakter',
@@ -221,14 +252,51 @@ class KriteriaController extends Controller
             'bobot.max' => 'Bobot maksimal 100',
             'assigned_to_supervisor_id.exists' => 'Supervisor yang dipilih tidak valid',
             'tipe_input.in' => 'Tipe input harus: angka, rating, atau dropdown',
-            'nilai_min.required_if' => 'Nilai minimum wajib diisi untuk tipe input angka atau rating',
-            'nilai_max.required_if' => 'Nilai maximum wajib diisi untuk tipe input angka atau rating',
-            'nilai_max.gte' => 'Nilai maximum harus lebih besar atau sama dengan nilai minimum',
-            'dropdown_options.required_if' => 'Dropdown options wajib diisi untuk tipe input dropdown',
-            'dropdown_options.min' => 'Minimal 2 pilihan untuk dropdown options',
-            'dropdown_options.*.nama.required_with' => 'Nama option wajib diisi',
-            'dropdown_options.*.nilai_tetap.required_with' => 'Nilai tetap wajib diisi',
+            'nilai_min.numeric' => 'Nilai minimum harus berupa angka',
+            'nilai_max.numeric' => 'Nilai maximum harus berupa angka',
+            'nilai_max.gt' => 'Nilai maximum harus lebih besar dari nilai minimum',
         ]);
+
+        // Custom validation for tipe_input specific requirements
+        if ($request->tipe_input === 'dropdown') {
+            // Validate dropdown options
+            if (!$request->has('dropdown_options') || !is_array($request->dropdown_options) || count($request->dropdown_options) < 2) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Tipe input dropdown memerlukan minimal 2 pilihan dropdown options.');
+            }
+
+            // Validate each dropdown option
+            foreach ($request->dropdown_options as $index => $option) {
+                if (empty($option['nama']) || trim($option['nama']) === '') {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Semua dropdown options harus memiliki nama yang valid.');
+                }
+                if (!isset($option['nilai_tetap']) || !is_numeric($option['nilai_tetap'])) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Semua dropdown options harus memiliki nilai tetap yang valid.');
+                }
+            }
+        } elseif ($request->tipe_input === 'angka' || $request->tipe_input === 'rating') {
+            // Validate nilai_min and nilai_max for angka and rating
+            if ($request->nilai_min === null || $request->nilai_min === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai minimum wajib diisi untuk tipe input angka atau rating.');
+            }
+            if ($request->nilai_max === null || $request->nilai_max === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai maximum wajib diisi untuk tipe input angka atau rating.');
+            }
+            if ($request->nilai_max <= $request->nilai_min) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Nilai maximum harus lebih besar dari nilai minimum.');
+            }
+        }
 
         // Validasi tambahan: Jika assign ke supervisor, pastikan user adalah supervisor
         if ($request->filled('assigned_to_supervisor_id')) {

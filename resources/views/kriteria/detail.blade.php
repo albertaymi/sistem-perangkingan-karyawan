@@ -375,7 +375,8 @@
 
                 {{-- Modal Body --}}
                 <form action="{{ route('kriteria.sub-kriteria.store', $kriteria->id) }}" method="POST"
-                    class="p-6 space-y-4">
+                    class="p-6 space-y-4" id="form-tambah-sub-kriteria"
+                    onsubmit="return validateSubKriteriaForm('tambah')">
                     @csrf
 
                     {{-- Nama Sub-Kriteria --}}
@@ -426,7 +427,7 @@
                                 </label>
                                 <input type="number" name="nilai_min" id="nilai_min_tambah" step="0.01"
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                    placeholder="Contoh: 0">
+                                    placeholder="Contoh: 0" oninput="clearFieldError(this)">
                             </div>
                             <div>
                                 <label for="nilai_max_tambah" class="block text-sm font-medium text-gray-700 mb-2">
@@ -434,7 +435,7 @@
                                 </label>
                                 <input type="number" name="nilai_max" id="nilai_max_tambah" step="0.01"
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                    placeholder="Contoh: 22">
+                                    placeholder="Contoh: 22" oninput="clearFieldError(this)">
                             </div>
                         </div>
                         <p class="text-xs text-gray-500">
@@ -443,13 +444,16 @@
                     </div>
 
                     {{-- Conditional Dropdown Options Fields --}}
-                    <div id="dropdown_options_sub_tambah" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                    <div id="dropdown_options_sub_tambah"
+                        class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
                         <div class="flex items-center justify-between mb-3">
                             <h4 class="text-sm font-medium text-gray-700">Dropdown Options</h4>
                             <button type="button" onclick="addDropdownOptionSub('tambah')"
                                 class="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors">
-                                <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
                                 </svg>
                                 Tambah Option
                             </button>
@@ -525,7 +529,8 @@
                 </div>
 
                 {{-- Modal Body --}}
-                <form id="form-edit-sub-kriteria" method="POST" class="p-6 space-y-4">
+                <form id="form-edit-sub-kriteria" method="POST" class="p-6 space-y-4"
+                    onsubmit="return validateSubKriteriaForm('edit')">
                     @csrf
                     @method('PUT')
 
@@ -571,26 +576,31 @@
                                     Nilai Minimum <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="nilai_min" id="nilai_min_edit" step="0.01"
-                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    oninput="clearFieldError(this)">
                             </div>
                             <div>
                                 <label for="nilai_max_edit" class="block text-sm font-medium text-gray-700 mb-2">
                                     Nilai Maximum <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="nilai_max" id="nilai_max_edit" step="0.01"
-                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    oninput="clearFieldError(this)">
                             </div>
                         </div>
                     </div>
 
                     {{-- Conditional Dropdown Options Fields --}}
-                    <div id="dropdown_options_sub_edit" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                    <div id="dropdown_options_sub_edit"
+                        class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
                         <div class="flex items-center justify-between mb-3">
                             <h4 class="text-sm font-medium text-gray-700">Dropdown Options</h4>
                             <button type="button" onclick="addDropdownOptionSub('edit')"
                                 class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                                <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
                                 </svg>
                                 Tambah Option
                             </button>
@@ -937,8 +947,143 @@
             });
         @endif
 
+        // Clear all validation errors
+        function clearValidationErrors(mode) {
+            // Remove all error messages
+            const form = mode === 'tambah' ? document.getElementById('form-tambah-sub-kriteria') : document.getElementById(
+                'form-edit-sub-kriteria');
+            if (form) {
+                const errorMessages = form.querySelectorAll('.validation-error-message');
+                errorMessages.forEach(msg => msg.remove());
+
+                // Remove error styling from inputs
+                const errorInputs = form.querySelectorAll('.border-red-500, .border-red-300');
+                errorInputs.forEach(input => {
+                    input.classList.remove('border-red-500', 'border-red-300', 'focus:ring-red-500',
+                        'focus:border-red-500');
+                    input.classList.add('border-gray-300', 'focus:ring-green-500', 'focus:border-green-500');
+                });
+            }
+        }
+
+        // Show validation error on field
+        function showFieldError(fieldElement, errorMessage) {
+            // Add error styling to input
+            fieldElement.classList.remove('border-gray-300', 'focus:ring-green-500', 'focus:border-green-500',
+                'focus:ring-blue-500', 'focus:border-blue-500');
+            fieldElement.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+
+            // Check if error message already exists
+            let errorDiv = fieldElement.parentElement.querySelector('.validation-error-message');
+            if (!errorDiv) {
+                // Create error message element
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'validation-error-message flex items-center mt-1 text-sm text-red-600';
+                errorDiv.innerHTML = `
+                    <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>${errorMessage}</span>
+                `;
+                fieldElement.parentElement.appendChild(errorDiv);
+            } else {
+                // Update existing error message
+                errorDiv.querySelector('span').textContent = errorMessage;
+            }
+        }
+
+        // Show validation error on dropdown options container
+        function showDropdownContainerError(container, errorMessage) {
+            // Check if error message already exists
+            let errorDiv = container.parentElement.querySelector('.validation-error-message');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className =
+                    'validation-error-message flex items-center mt-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600';
+                errorDiv.innerHTML = `
+                    <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="font-medium">${errorMessage}</span>
+                `;
+                container.parentElement.appendChild(errorDiv);
+            } else {
+                errorDiv.querySelector('span').textContent = errorMessage;
+            }
+        }
+
+        // Validate Sub-Kriteria Form before submission
+        function validateSubKriteriaForm(mode) {
+            // Clear previous errors
+            clearValidationErrors(mode);
+
+            const tipeInput = document.getElementById(`tipe_input_${mode}`).value;
+            const nilaiMin = document.getElementById(`nilai_min_${mode}`);
+            const nilaiMax = document.getElementById(`nilai_max_${mode}`);
+            const container = document.getElementById(`options_container_sub_${mode}`);
+            let hasError = false;
+
+            // Validate dropdown options
+            if (tipeInput === 'dropdown') {
+                const options = container.querySelectorAll('[id^="option_item_sub_"]');
+
+                if (options.length < 2) {
+                    showDropdownContainerError(container,
+                        'Tipe input dropdown memerlukan minimal 2 pilihan dropdown options.');
+                    hasError = true;
+                }
+
+                // Validate each option has nama and nilai_tetap
+                options.forEach((option) => {
+                    const namaInput = option.querySelector('input[name*="[nama]"]');
+                    const nilaiInput = option.querySelector('input[name*="[nilai_tetap]"]');
+
+                    if (!namaInput || !namaInput.value.trim()) {
+                        showFieldError(namaInput, 'Nama option wajib diisi');
+                        hasError = true;
+                    }
+                    if (!nilaiInput || !nilaiInput.value || isNaN(nilaiInput.value)) {
+                        showFieldError(nilaiInput, 'Nilai tetap harus berupa angka');
+                        hasError = true;
+                    }
+                });
+            }
+
+            // Validate nilai_min and nilai_max for angka and rating
+            if (tipeInput === 'angka' || tipeInput === 'rating') {
+                if (!nilaiMin.value || nilaiMin.value === '') {
+                    showFieldError(nilaiMin, 'Nilai minimum wajib diisi untuk tipe input angka atau rating');
+                    hasError = true;
+                }
+                if (!nilaiMax.value || nilaiMax.value === '') {
+                    showFieldError(nilaiMax, 'Nilai maximum wajib diisi untuk tipe input angka atau rating');
+                    hasError = true;
+                } else if (nilaiMin.value && parseFloat(nilaiMax.value) <= parseFloat(nilaiMin.value)) {
+                    showFieldError(nilaiMax, 'Nilai maximum harus lebih besar dari nilai minimum');
+                    hasError = true;
+                }
+            }
+
+            if (hasError) {
+                // Scroll to first error
+                const firstError = document.querySelector('.validation-error-message');
+                if (firstError) {
+                    firstError.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+                return false;
+            }
+
+            return true;
+        }
+
         // Toggle Range Fields based on Tipe Input
         function toggleRangeFields(mode) {
+            // Clear validation errors when changing tipe input
+            clearValidationErrors(mode);
+
             const tipeInput = document.getElementById(`tipe_input_${mode}`).value;
             const rangeFields = document.getElementById(`range_fields_${mode}`);
             const dropdownOptions = document.getElementById(`dropdown_options_sub_${mode}`);
@@ -984,12 +1129,21 @@
         }
 
         // Counter for dropdown options in sub-kriteria
-        let dropdownOptionSubCounter = { tambah: 0, edit: 0 };
+        let dropdownOptionSubCounter = {
+            tambah: 0,
+            edit: 0
+        };
 
         // Add dropdown option field for sub-kriteria
         function addDropdownOptionSub(mode) {
             const container = document.getElementById(`options_container_sub_${mode}`);
             const index = dropdownOptionSubCounter[mode]++;
+
+            // Clear dropdown container error when adding new option
+            const containerError = container.parentElement.querySelector('.validation-error-message');
+            if (containerError) {
+                containerError.remove();
+            }
 
             const optionDiv = document.createElement('div');
             optionDiv.className = 'flex items-start gap-2 p-3 bg-white border border-gray-200 rounded-lg';
@@ -1007,6 +1161,7 @@
                             name="dropdown_options[${index}][nama]"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${buttonColor}-500 focus:border-transparent text-sm"
                             placeholder="Contoh: Lolos"
+                            oninput="clearFieldError(this)"
                             required>
                     </div>
                     <div>
@@ -1018,6 +1173,7 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${buttonColor}-500 focus:border-transparent text-sm"
                             placeholder="Contoh: 100"
                             step="0.01"
+                            oninput="clearFieldError(this)"
                             required>
                     </div>
                 </div>
@@ -1032,6 +1188,19 @@
             `;
 
             container.appendChild(optionDiv);
+        }
+
+        // Clear field error when user starts typing
+        function clearFieldError(fieldElement) {
+            // Remove error styling
+            fieldElement.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+            fieldElement.classList.add('border-gray-300');
+
+            // Remove error message
+            const errorDiv = fieldElement.parentElement.querySelector('.validation-error-message');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
         }
 
         // Remove dropdown option field for sub-kriteria
@@ -1063,8 +1232,10 @@
                         document.getElementById('nama_kriteria_edit').value = subKriteria.nama_kriteria;
                         document.getElementById('deskripsi_edit').value = subKriteria.deskripsi || '';
                         document.getElementById('tipe_input_edit').value = subKriteria.tipe_input;
-                        document.getElementById('nilai_min_edit').value = subKriteria.nilai_min !== null ? subKriteria.nilai_min : '';
-                        document.getElementById('nilai_max_edit').value = subKriteria.nilai_max !== null ? subKriteria.nilai_max : '';
+                        document.getElementById('nilai_min_edit').value = subKriteria.nilai_min !== null ? subKriteria
+                            .nilai_min : '';
+                        document.getElementById('nilai_max_edit').value = subKriteria.nilai_max !== null ? subKriteria
+                            .nilai_max : '';
                         document.getElementById('bobot_edit').value = Math.round(subKriteria.bobot);
 
                         // Clear dropdown options container first
@@ -1074,13 +1245,15 @@
                         toggleRangeFields('edit');
 
                         // Load existing dropdown options if tipe_input is dropdown
-                        if (subKriteria.tipe_input === 'dropdown' && subKriteria.dropdown_options && subKriteria.dropdown_options.length > 0) {
+                        if (subKriteria.tipe_input === 'dropdown' && subKriteria.dropdown_options && subKriteria
+                            .dropdown_options.length > 0) {
                             subKriteria.dropdown_options.forEach((option, index) => {
                                 const container = document.getElementById('options_container_sub_edit');
                                 const optionIndex = dropdownOptionSubCounter.edit++;
 
                                 const optionDiv = document.createElement('div');
-                                optionDiv.className = 'flex items-start gap-2 p-3 bg-white border border-gray-200 rounded-lg';
+                                optionDiv.className =
+                                    'flex items-start gap-2 p-3 bg-white border border-gray-200 rounded-lg';
                                 optionDiv.id = `option_item_sub_edit_${optionIndex}`;
 
                                 optionDiv.innerHTML = `
