@@ -133,23 +133,15 @@ class PenilaianController extends Controller
     {
         $karyawan = User::findOrFail($karyawanId);
 
-        // Get all active kriteria dengan sub-kriteria
-        // Filter by supervisor if logged in as supervisor
-        $kriteriaQuery = SistemKriteria::where('level', 1)
-            ->where('is_active', true);
-
-        // If supervisor, only show assigned kriteria
-        if (auth()->user()->isSupervisor()) {
-            $kriteriaQuery->where(function ($q) {
-                $q->where('assigned_to_supervisor_id', auth()->id())
-                  ->orWhereNull('assigned_to_supervisor_id'); // Allow kriteria without assignment
-            });
-        }
-
-        $kriteria = $kriteriaQuery
-            ->with(['subKriteria' => function ($query) {
-                $query->where('is_active', true)->orderBy('urutan', 'asc');
-            }])
+        // Get all active kriteria dengan sub-kriteria and supervisor info
+        $kriteria = SistemKriteria::where('level', 1)
+            ->where('is_active', true)
+            ->with([
+                'subKriteria' => function ($query) {
+                    $query->where('is_active', true)->orderBy('urutan', 'asc');
+                },
+                'assignedSupervisor'
+            ])
             ->orderBy('urutan', 'asc')
             ->get();
 
@@ -159,8 +151,11 @@ class PenilaianController extends Controller
             ->get()
             ->keyBy('id_sub_kriteria');
 
-        // Calculate status for each kriteria
-        $kriteriaWithStatus = $kriteria->map(function ($item) use ($existingPenilaian) {
+        // Current user
+        $currentUser = auth()->user();
+
+        // Calculate status for each kriteria and check access
+        $kriteriaWithStatus = $kriteria->map(function ($item) use ($existingPenilaian, $currentUser) {
             $totalSubKriteria = $item->subKriteria->count();
             $dinilaiCount = 0;
 
@@ -172,6 +167,14 @@ class PenilaianController extends Controller
 
             $persentase = $totalSubKriteria > 0 ? round(($dinilaiCount / $totalSubKriteria) * 100, 1) : 0;
 
+            // Check if current user has access to this kriteria
+            $hasAccess = true;
+            if ($currentUser->isSupervisor()) {
+                // Supervisor has access if: assigned to them OR no assignment (null)
+                $hasAccess = $item->assigned_to_supervisor_id === $currentUser->id
+                          || $item->assigned_to_supervisor_id === null;
+            }
+
             return [
                 'kriteria' => $item,
                 'total_sub' => $totalSubKriteria,
@@ -179,7 +182,9 @@ class PenilaianController extends Controller
                 'belum_dinilai' => $totalSubKriteria - $dinilaiCount,
                 'persentase' => $persentase,
                 'status' => $dinilaiCount === 0 ? 'belum' :
-                           ($dinilaiCount >= $totalSubKriteria ? 'selesai' : 'sebagian')
+                           ($dinilaiCount >= $totalSubKriteria ? 'selesai' : 'sebagian'),
+                'has_access' => $hasAccess,
+                'assigned_supervisor' => $item->assignedSupervisor,
             ];
         });
 
@@ -203,51 +208,102 @@ class PenilaianController extends Controller
     /**
      * Show the form for creating a new penilaian.
      * Form dynamic yang load kriteria & sub-kriteria berdasarkan karyawan
+     *
+     * New: If kriteria_id provided, only show that specific kriteria (single kriteria flow)
      */
     public function create(Request $request)
     {
-        // Get karyawan list yang bisa dinilai
+        // Get query params
+        $karyawanId = $request->query('karyawan_id');
+        $bulan = $request->query('bulan', date('n'));
+        $tahun = $request->query('tahun', date('Y'));
+        $kriteriaId = $request->query('kriteria_id'); // NEW: specific kriteria
+
+        // Get karyawan list yang bisa dinilai (for old flow)
         $karyawanList = User::where('role', 'karyawan')
             ->approved()
             ->orderBy('nama', 'asc')
             ->get();
 
-        // Default periode = bulan dan tahun sekarang
-        $bulan = $request->query('bulan', date('n'));
-        $tahun = $request->query('tahun', date('Y'));
-
-        // Jika karyawan sudah dipilih, load kriteria & sub-kriteria
-        $karyawanId = $request->query('karyawan_id');
         $karyawan = null;
         $kriteria = collect();
+        $singleKriteria = null; // NEW: for single kriteria mode
         $existingPenilaian = collect();
+        $periodeLabel = null;
 
+        // If karyawan selected
         if ($karyawanId) {
             $karyawan = User::findOrFail($karyawanId);
 
-            // Get all active kriteria dengan sub-kriteria & dropdown options
-            // Filter by supervisor if logged in as supervisor
-            $kriteriaQuery = SistemKriteria::where('level', 1)
-                ->where('is_active', true);
+            // Generate periode label
+            $namaBulan = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+            $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
-            // If supervisor, only show assigned kriteria
-            if (auth()->user()->isSupervisor()) {
-                $kriteriaQuery->where(function ($q) {
-                    $q->where('assigned_to_supervisor_id', auth()->id())
-                      ->orWhereNull('assigned_to_supervisor_id'); // Allow kriteria without assignment
-                });
+            // NEW: Single kriteria flow (from overview page)
+            if ($kriteriaId) {
+                // Get specific kriteria only
+                $kriteriaQuery = SistemKriteria::where('level', 1)
+                    ->where('id', $kriteriaId)
+                    ->where('is_active', true);
+
+                // Check supervisor access
+                if (auth()->user()->isSupervisor()) {
+                    $kriteriaQuery->where(function ($q) {
+                        $q->where('assigned_to_supervisor_id', auth()->id())
+                          ->orWhereNull('assigned_to_supervisor_id');
+                    });
+                }
+
+                $singleKriteria = $kriteriaQuery
+                    ->with(['subKriteria' => function ($query) {
+                        $query->where('is_active', true)
+                            ->with(['dropdownOptions' => function ($q) {
+                                $q->where('is_active', true)->orderBy('urutan', 'asc');
+                            }])
+                            ->orderBy('urutan', 'asc');
+                    }])
+                    ->first();
+
+                // If kriteria not found or no access, redirect back with error
+                if (!$singleKriteria) {
+                    return redirect()->route('penilaian.overview', [
+                        'karyawanId' => $karyawanId,
+                        'bulan' => $bulan,
+                        'tahun' => $tahun
+                    ])->with('error', 'Kriteria tidak ditemukan atau Anda tidak memiliki akses ke kriteria ini.');
+                }
+
+                // Use single kriteria in array for view compatibility
+                $kriteria = collect([$singleKriteria]);
+
+            } else {
+                // OLD FLOW: Get all kriteria (legacy flow)
+                $kriteriaQuery = SistemKriteria::where('level', 1)
+                    ->where('is_active', true);
+
+                // If supervisor, only show assigned kriteria
+                if (auth()->user()->isSupervisor()) {
+                    $kriteriaQuery->where(function ($q) {
+                        $q->where('assigned_to_supervisor_id', auth()->id())
+                          ->orWhereNull('assigned_to_supervisor_id');
+                    });
+                }
+
+                $kriteria = $kriteriaQuery
+                    ->with(['subKriteria' => function ($query) {
+                        $query->where('is_active', true)
+                            ->with(['dropdownOptions' => function ($q) {
+                                $q->where('is_active', true)->orderBy('urutan', 'asc');
+                            }])
+                            ->orderBy('urutan', 'asc');
+                    }])
+                    ->orderBy('urutan', 'asc')
+                    ->get();
             }
-
-            $kriteria = $kriteriaQuery
-                ->with(['subKriteria' => function ($query) {
-                    $query->where('is_active', true)
-                        ->with(['dropdownOptions' => function ($q) {
-                            $q->where('is_active', true)->orderBy('urutan', 'asc');
-                        }])
-                        ->orderBy('urutan', 'asc');
-                }])
-                ->orderBy('urutan', 'asc')
-                ->get();
 
             // Check existing penilaian untuk periode ini
             $existingPenilaian = Penilaian::byKaryawan($karyawanId)
@@ -260,9 +316,11 @@ class PenilaianController extends Controller
             'karyawanList',
             'karyawan',
             'kriteria',
+            'singleKriteria',
             'bulan',
             'tahun',
-            'existingPenilaian'
+            'existingPenilaian',
+            'periodeLabel'
         ));
     }
 
@@ -339,6 +397,15 @@ class PenilaianController extends Controller
             }
 
             DB::commit();
+
+            // Check if we should redirect to overview (single kriteria mode from query param)
+            if ($request->has('from_overview') || $request->session()->get('from_overview')) {
+                return redirect()->route('penilaian.overview', [
+                    'karyawanId' => $karyawanId,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun
+                ])->with('success', "Berhasil menyimpan {$insertedCount} penilaian untuk periode {$periodeLabel}");
+            }
 
             return redirect()->route('penilaian.index')
                 ->with('success', "Berhasil menyimpan {$insertedCount} penilaian untuk periode {$periodeLabel}");

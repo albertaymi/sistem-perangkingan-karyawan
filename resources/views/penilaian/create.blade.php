@@ -32,17 +32,42 @@
 
     {{-- Header Section --}}
     <div class="mb-6">
-        <h2 class="text-3xl font-bold text-gray-900">Tambah Penilaian Karyawan</h2>
-        <p class="mt-2 text-sm text-gray-600">Input penilaian kinerja karyawan berdasarkan kriteria yang telah ditentukan
-        </p>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">
+                    @if($singleKriteria)
+                        Penilaian: {{ $singleKriteria->nama_kriteria }}
+                    @else
+                        Tambah Penilaian Karyawan
+                    @endif
+                </h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    @if($singleKriteria)
+                        Input penilaian untuk kriteria {{ $singleKriteria->nama_kriteria }} - {{ $karyawan->nama ?? '' }}
+                    @else
+                        Input penilaian kinerja karyawan berdasarkan kriteria yang telah ditentukan
+                    @endif
+                </p>
+            </div>
+            @if($singleKriteria && $karyawan)
+                <a href="{{ route('penilaian.overview', ['karyawanId' => $karyawan->id, 'bulan' => $bulan, 'tahun' => $tahun]) }}"
+                    class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
+                    <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Kembali ke Overview
+                </a>
+            @endif
+        </div>
     </div>
 
-    {{-- Selection Form: Pilih Karyawan & Periode --}}
-    <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 mb-6">
-        <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Pilih Karyawan & Periode Penilaian</h3>
+    {{-- Selection Form: Pilih Karyawan & Periode (Hide if single kriteria mode) --}}
+    @if(!$singleKriteria)
+        <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 mb-6">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Pilih Karyawan & Periode Penilaian</h3>
 
-            <form method="GET" action="{{ route('penilaian.create') }}" class="space-y-4">
+                <form method="GET" action="{{ route('penilaian.create') }}" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {{-- Pilih Karyawan --}}
                     <div>
@@ -113,6 +138,7 @@
             </form>
         </div>
     </div>
+    @endif
 
     @if ($karyawan && $kriteria->isNotEmpty())
         {{-- Info Karyawan & Periode --}}
@@ -127,27 +153,19 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-gray-900">{{ $karyawan->nama }}</h3>
-                        <p class="text-sm text-gray-600">{{ $karyawan->email }}</p>
+                        <div class="flex items-center gap-4 mt-1">
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">NIK:</span> {{ $karyawan->nik }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Divisi:</span> {{ $karyawan->divisi }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Jabatan:</span> {{ $karyawan->jabatan }}
+                            </p>
+                        </div>
                         <p class="text-sm text-gray-600 mt-1">
-                            <strong>Periode:</strong>
-                            @php
-                                $namaBulan = [
-                                    '',
-                                    'Januari',
-                                    'Februari',
-                                    'Maret',
-                                    'April',
-                                    'Mei',
-                                    'Juni',
-                                    'Juli',
-                                    'Agustus',
-                                    'September',
-                                    'Oktober',
-                                    'November',
-                                    'Desember',
-                                ];
-                            @endphp
-                            {{ $namaBulan[$bulan] }} {{ $tahun }}
+                            <strong>Periode:</strong> {{ $periodeLabel }}
                         </p>
                     </div>
                 </div>
@@ -175,6 +193,9 @@
             <input type="hidden" name="karyawan_id" value="{{ $karyawan->id }}">
             <input type="hidden" name="bulan" value="{{ $bulan }}">
             <input type="hidden" name="tahun" value="{{ $tahun }}">
+            @if($singleKriteria)
+                <input type="hidden" name="from_overview" value="1">
+            @endif
 
             {{-- Loop Through Kriteria --}}
             @foreach ($kriteria as $kriteriaIndex => $kriteriaItem)
@@ -320,15 +341,27 @@
             {{-- Action Buttons --}}
             <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 p-6">
                 <div class="flex items-center justify-between gap-4">
-                    <a href="{{ route('penilaian.index') }}"
-                        class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
-                        <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
-                        Kembali
-                    </a>
+                    @if($singleKriteria)
+                        <a href="{{ route('penilaian.overview', ['karyawanId' => $karyawan->id, 'bulan' => $bulan, 'tahun' => $tahun]) }}"
+                            class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
+                            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Kembali ke Overview
+                        </a>
+                    @else
+                        <a href="{{ route('penilaian.index') }}"
+                            class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
+                            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Kembali
+                        </a>
+                    @endif
 
                     <button type="submit"
                         class="px-8 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-150 shadow-sm cursor-pointer">

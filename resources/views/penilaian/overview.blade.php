@@ -118,6 +118,24 @@
                                     <span class="text-gray-600">Sub-Kriteria:</span>
                                     <span class="font-semibold text-gray-900">{{ $data['total_sub'] }}</span>
                                 </div>
+                                <div class="text-sm">
+                                    <span class="text-gray-600">Pengelola:</span>
+                                    @if ($data['assigned_supervisor'])
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path>
+                                            </svg>
+                                            {{ $data['assigned_supervisor']->nama }}
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                                            </svg>
+                                            HRD
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
 
                             <div class="flex items-center">
@@ -138,15 +156,45 @@
                         </div>
 
                         <div class="ml-6">
-                            <a href="{{ route('penilaian.create', ['karyawan_id' => $karyawan->id, 'bulan' => $bulan, 'tahun' => $tahun, 'kriteria_id' => $data['kriteria']->id]) }}"
-                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 shadow-sm cursor-pointer">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                    </path>
-                                </svg>
-                                Nilai
-                            </a>
+                            @if ($data['has_access'])
+                                @if ($data['status'] === 'selesai' || $data['status'] === 'sebagian')
+                                    {{-- Button Lihat/Edit jika sudah ada penilaian --}}
+                                    <a href="{{ route('penilaian.create', ['karyawan_id' => $karyawan->id, 'bulan' => $bulan, 'tahun' => $tahun, 'kriteria_id' => $data['kriteria']->id]) }}"
+                                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-150 shadow-sm cursor-pointer">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                            </path>
+                                        </svg>
+                                        Lihat/Edit
+                                    </a>
+                                @else
+                                    {{-- Button Nilai jika belum ada penilaian --}}
+                                    <a href="{{ route('penilaian.create', ['karyawan_id' => $karyawan->id, 'bulan' => $bulan, 'tahun' => $tahun, 'kriteria_id' => $data['kriteria']->id]) }}"
+                                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 shadow-sm cursor-pointer">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                            </path>
+                                        </svg>
+                                        Nilai
+                                    </a>
+                                @endif
+                            @else
+                                {{-- Button disabled jika tidak punya akses --}}
+                                <button disabled
+                                    class="inline-flex items-center px-6 py-3 bg-gray-300 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed opacity-60"
+                                    title="Anda tidak memiliki akses untuk menilai kriteria ini">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                        </path>
+                                    </svg>
+                                    Tidak Ada Akses
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
