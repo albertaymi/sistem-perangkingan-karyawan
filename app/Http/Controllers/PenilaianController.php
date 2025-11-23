@@ -82,15 +82,26 @@ class PenilaianController extends Controller
             ->pluck('divisi')
             ->filter();
 
-        // Get available years from existing penilaian
-        $tahunList = Penilaian::select('tahun')
+        // Get available years - show range from 5 years ago to current year
+        $currentYear = (int) date('Y');
+        $tahunList = collect();
+
+        // Generate year list from current year down to 5 years ago
+        for ($y = $currentYear; $y >= $currentYear - 5; $y--) {
+            $tahunList->push($y);
+        }
+
+        // Also include years from existing penilaian data if any exists beyond this range
+        $existingYears = Penilaian::select('tahun')
             ->distinct()
-            ->orderBy('tahun', 'desc')
             ->pluck('tahun');
 
-        // Add current year if not exists
-        if (!$tahunList->contains(date('Y'))) {
-            $tahunList->prepend(date('Y'));
+        if ($existingYears->isNotEmpty()) {
+            $tahunList = $tahunList->merge($existingYears)
+                ->unique()
+                ->sort()
+                ->values()
+                ->reverse();
         }
 
         // Generate periode label
