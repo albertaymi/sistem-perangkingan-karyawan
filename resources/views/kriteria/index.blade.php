@@ -102,6 +102,14 @@
                         </th>
                         <th scope="col"
                             class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Tipe Input
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Assigned To
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Sub-Kriteria
                         </th>
                         <th scope="col"
@@ -156,6 +164,47 @@
                                     <div class="text-sm font-semibold text-gray-900">{{ number_format($item->bobot, 0) }}%
                                     </div>
                                 </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if ($item->tipe_input)
+                                    @if($item->tipe_input === 'angka')
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            Input Angka
+                                        </span>
+                                    @elseif($item->tipe_input === 'rating')
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                            </svg>
+                                            Rating
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            Dropdown
+                                        </span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-gray-400">Sub-Kriteria</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if ($item->assigned_to_supervisor_id)
+                                    <div class="text-sm text-gray-900">
+                                        {{ $item->assignedSupervisor->nama ?? 'N/A' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        {{ $item->assignedSupervisor->nik ?? '-' }}
+                                    </div>
+                                @else
+                                    <span class="text-xs text-gray-400">Tidak Ada Assignment</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
@@ -247,7 +296,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center">
+                            <td colspan="10" class="px-6 py-12 text-center">
                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -359,6 +408,92 @@
                         </p>
                     </div>
 
+                    {{-- Assign ke Supervisor --}}
+                    <div>
+                        <label for="assigned_to_supervisor_id_tambah" class="block text-sm font-medium text-gray-700 mb-2">
+                            Assign ke Supervisor <span class="text-gray-400 text-xs">(Opsional)</span>
+                        </label>
+                        <select name="assigned_to_supervisor_id" id="assigned_to_supervisor_id_tambah"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                            <option value="">-- Tidak di-assign (Akses Semua) --</option>
+                            @foreach($supervisors as $supervisor)
+                                <option value="{{ $supervisor->id }}">
+                                    {{ $supervisor->nama }} ({{ $supervisor->nik ?? '-' }}) - {{ $supervisor->divisi ?? '-' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Jika di-assign, hanya supervisor terpilih yang dapat melakukan penilaian pada kriteria ini
+                        </p>
+                    </div>
+
+                    {{-- Tipe Input Penilaian --}}
+                    <div>
+                        <label for="tipe_input_tambah" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tipe Input Penilaian <span class="text-gray-400 text-xs">(Opsional)</span>
+                        </label>
+                        <select name="tipe_input" id="tipe_input_tambah" onchange="toggleKriteriaRangeFields('tambah')"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                            <option value="">-- Tidak ada (Gunakan Sub-Kriteria) --</option>
+                            <option value="angka">Input Angka (Rentang Nilai)</option>
+                            <option value="rating">Rating Scale (1-5)</option>
+                            <option value="dropdown">Dropdown Selection (Pilihan Tetap)</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            <strong>Kosongkan</strong> jika kriteria ini akan memiliki sub-kriteria.<br>
+                            <strong>Pilih tipe</strong> jika kriteria ini langsung digunakan untuk penilaian tanpa sub-kriteria.
+                        </p>
+
+                        {{-- Conditional Range Fields --}}
+                        <div id="range_fields_tambah" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                            <h4 class="text-sm font-medium text-gray-700 mb-3">Range Nilai</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                {{-- Nilai Minimum --}}
+                                <div>
+                                    <label for="nilai_min_tambah" class="block text-xs font-medium text-gray-600 mb-1">
+                                        Nilai Minimum
+                                    </label>
+                                    <input type="number" name="nilai_min" id="nilai_min_tambah"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-sm"
+                                           placeholder="Contoh: 0">
+                                </div>
+
+                                {{-- Nilai Maximum --}}
+                                <div>
+                                    <label for="nilai_max_tambah" class="block text-xs font-medium text-gray-600 mb-1">
+                                        Nilai Maximum
+                                    </label>
+                                    <input type="number" name="nilai_max" id="nilai_max_tambah"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-sm"
+                                           placeholder="Contoh: 100">
+                                </div>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">
+                                Tentukan rentang nilai yang valid untuk input penilaian
+                            </p>
+                        </div>
+
+                        {{-- Conditional Dropdown Options Fields --}}
+                        <div id="dropdown_options_tambah" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-sm font-medium text-gray-700">Dropdown Options</h4>
+                                <button type="button" onclick="addDropdownOption('tambah')"
+                                    class="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors">
+                                    <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Tambah Option
+                                </button>
+                            </div>
+                            <div id="options_container_tambah" class="space-y-2">
+                                {{-- Options will be added here dynamically --}}
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">
+                                Tambahkan minimal 2 pilihan untuk dropdown. Contoh: "Lolos", "Tidak Lolos"
+                            </p>
+                        </div>
+                    </div>
+
                     {{-- Modal Footer --}}
                     <div class="flex items-center gap-3 pt-4 border-t border-gray-200">
                         <button type="submit"
@@ -456,6 +591,92 @@
                         </p>
                     </div>
 
+                    {{-- Assign ke Supervisor --}}
+                    <div>
+                        <label for="assigned_to_supervisor_id_edit" class="block text-sm font-medium text-gray-700 mb-2">
+                            Assign ke Supervisor <span class="text-gray-400 text-xs">(Opsional)</span>
+                        </label>
+                        <select name="assigned_to_supervisor_id" id="assigned_to_supervisor_id_edit"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">-- Tidak di-assign (Akses Semua) --</option>
+                            @foreach($supervisors as $supervisor)
+                                <option value="{{ $supervisor->id }}">
+                                    {{ $supervisor->nama }} ({{ $supervisor->nik ?? '-' }}) - {{ $supervisor->divisi ?? '-' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Jika di-assign, hanya supervisor terpilih yang dapat melakukan penilaian pada kriteria ini
+                        </p>
+                    </div>
+
+                    {{-- Tipe Input Penilaian --}}
+                    <div>
+                        <label for="tipe_input_edit" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tipe Input Penilaian <span class="text-gray-400 text-xs">(Opsional)</span>
+                        </label>
+                        <select name="tipe_input" id="tipe_input_edit" onchange="toggleKriteriaRangeFields('edit')"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">-- Tidak ada (Gunakan Sub-Kriteria) --</option>
+                            <option value="angka">Input Angka (Rentang Nilai)</option>
+                            <option value="rating">Rating Scale (1-5)</option>
+                            <option value="dropdown">Dropdown Selection (Pilihan Tetap)</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            <strong>Kosongkan</strong> jika kriteria ini akan memiliki sub-kriteria.<br>
+                            <strong>Pilih tipe</strong> jika kriteria ini langsung digunakan untuk penilaian tanpa sub-kriteria.
+                        </p>
+
+                        {{-- Conditional Range Fields --}}
+                        <div id="range_fields_edit" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                            <h4 class="text-sm font-medium text-gray-700 mb-3">Range Nilai</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                {{-- Nilai Minimum --}}
+                                <div>
+                                    <label for="nilai_min_edit" class="block text-xs font-medium text-gray-600 mb-1">
+                                        Nilai Minimum
+                                    </label>
+                                    <input type="number" name="nilai_min" id="nilai_min_edit"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                                           placeholder="Contoh: 0">
+                                </div>
+
+                                {{-- Nilai Maximum --}}
+                                <div>
+                                    <label for="nilai_max_edit" class="block text-xs font-medium text-gray-600 mb-1">
+                                        Nilai Maximum
+                                    </label>
+                                    <input type="number" name="nilai_max" id="nilai_max_edit"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                                           placeholder="Contoh: 100">
+                                </div>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">
+                                Tentukan rentang nilai yang valid untuk input penilaian
+                            </p>
+                        </div>
+
+                        {{-- Conditional Dropdown Options Fields --}}
+                        <div id="dropdown_options_edit" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-sm font-medium text-gray-700">Dropdown Options</h4>
+                                <button type="button" onclick="addDropdownOption('edit')"
+                                    class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                    <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Tambah Option
+                                </button>
+                            </div>
+                            <div id="options_container_edit" class="space-y-2">
+                                {{-- Options will be added here dynamically --}}
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">
+                                Tambahkan minimal 2 pilihan untuk dropdown. Contoh: "Lolos", "Tidak Lolos"
+                            </p>
+                        </div>
+                    </div>
+
                     {{-- Modal Footer --}}
                     <div class="flex items-center gap-3 pt-4 border-t border-gray-200">
                         <button type="submit"
@@ -531,6 +752,116 @@
     </script>
 
     <script>
+        // Toggle Range Fields for Kriteria Modal (sama seperti sub-kriteria)
+        function toggleKriteriaRangeFields(mode) {
+            const tipeInput = document.getElementById(`tipe_input_${mode}`).value;
+            const rangeFields = document.getElementById(`range_fields_${mode}`);
+            const dropdownOptions = document.getElementById(`dropdown_options_${mode}`);
+            const nilaiMin = document.getElementById(`nilai_min_${mode}`);
+            const nilaiMax = document.getElementById(`nilai_max_${mode}`);
+
+            // Hide both sections first
+            rangeFields.classList.add('hidden');
+            dropdownOptions.classList.add('hidden');
+
+            if (tipeInput === 'angka' || tipeInput === 'rating') {
+                rangeFields.classList.remove('hidden');
+                nilaiMin.required = true;
+                nilaiMax.required = true;
+
+                // Set default values for rating
+                if (tipeInput === 'rating') {
+                    nilaiMin.value = 1;
+                    nilaiMax.value = 5;
+                } else {
+                    nilaiMin.value = '';
+                    nilaiMax.value = '';
+                }
+            } else if (tipeInput === 'dropdown') {
+                dropdownOptions.classList.remove('hidden');
+                nilaiMin.required = false;
+                nilaiMax.required = false;
+                nilaiMin.value = '';
+                nilaiMax.value = '';
+
+                // Initialize with 2 empty options for tambah mode
+                const container = document.getElementById(`options_container_${mode}`);
+                if (mode === 'tambah' && container.children.length === 0) {
+                    addDropdownOption(mode);
+                    addDropdownOption(mode);
+                }
+            } else {
+                nilaiMin.required = false;
+                nilaiMax.required = false;
+                nilaiMin.value = '';
+                nilaiMax.value = '';
+            }
+        }
+
+        // Counter for dropdown options
+        let dropdownOptionCounter = { tambah: 0, edit: 0 };
+
+        // Add dropdown option field
+        function addDropdownOption(mode) {
+            const container = document.getElementById(`options_container_${mode}`);
+            const index = dropdownOptionCounter[mode]++;
+
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'flex items-start gap-2 p-3 bg-white border border-gray-200 rounded-lg';
+            optionDiv.id = `option_item_${mode}_${index}`;
+
+            optionDiv.innerHTML = `
+                <div class="flex-1 grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                            Nama Option <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text"
+                            name="dropdown_options[${index}][nama]"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="Contoh: Lolos"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                            Nilai Tetap <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number"
+                            name="dropdown_options[${index}][nilai_tetap]"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="Contoh: 100"
+                            step="0.01"
+                            required>
+                    </div>
+                </div>
+                <button type="button"
+                    onclick="removeDropdownOption(${index}, '${mode}')"
+                    class="mt-6 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Hapus option">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+
+            container.appendChild(optionDiv);
+        }
+
+        // Remove dropdown option field
+        function removeDropdownOption(index, mode) {
+            const optionDiv = document.getElementById(`option_item_${mode}_${index}`);
+            if (optionDiv) {
+                optionDiv.remove();
+            }
+        }
+
+        // Clear dropdown options container
+        function clearDropdownOptions(mode) {
+            const container = document.getElementById(`options_container_${mode}`);
+            container.innerHTML = '';
+            dropdownOptionCounter[mode] = 0;
+        }
+
         // Edit Kriteria
         function editKriteria(id) {
             // Fetch data kriteria
@@ -546,6 +877,68 @@
                         document.getElementById('deskripsi_edit').value = kriteria.deskripsi || '';
                         document.getElementById('tipe_kriteria_edit').value = kriteria.tipe_kriteria;
                         document.getElementById('bobot_edit').value = Math.round(kriteria.bobot);
+
+                        // Populate new fields
+                        document.getElementById('assigned_to_supervisor_id_edit').value = kriteria.assigned_to_supervisor_id || '';
+                        document.getElementById('tipe_input_edit').value = kriteria.tipe_input || '';
+                        document.getElementById('nilai_min_edit').value = kriteria.nilai_min !== null ? kriteria.nilai_min : '';
+                        document.getElementById('nilai_max_edit').value = kriteria.nilai_max !== null ? kriteria.nilai_max : '';
+
+                        // Clear dropdown options container first
+                        clearDropdownOptions('edit');
+
+                        // Toggle range fields visibility based on tipe_input
+                        toggleKriteriaRangeFields('edit');
+
+                        // Load existing dropdown options if tipe_input is dropdown
+                        if (kriteria.tipe_input === 'dropdown' && kriteria.dropdown_options && kriteria.dropdown_options.length > 0) {
+                            kriteria.dropdown_options.forEach((option, index) => {
+                                const container = document.getElementById('options_container_edit');
+                                const optionIndex = dropdownOptionCounter.edit++;
+
+                                const optionDiv = document.createElement('div');
+                                optionDiv.className = 'flex items-start gap-2 p-3 bg-white border border-gray-200 rounded-lg';
+                                optionDiv.id = `option_item_edit_${optionIndex}`;
+
+                                optionDiv.innerHTML = `
+                                    <div class="flex-1 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">
+                                                Nama Option <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text"
+                                                name="dropdown_options[${optionIndex}][nama]"
+                                                value="${option.nama_kriteria}"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                placeholder="Contoh: Lolos"
+                                                required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">
+                                                Nilai Tetap <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="number"
+                                                name="dropdown_options[${optionIndex}][nilai_tetap]"
+                                                value="${option.nilai_tetap}"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                placeholder="Contoh: 100"
+                                                step="0.01"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <button type="button"
+                                        onclick="removeDropdownOption(${optionIndex}, 'edit')"
+                                        class="mt-6 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="Hapus option">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                `;
+
+                                container.appendChild(optionDiv);
+                            });
+                        }
 
                         // Update form action
                         document.getElementById('form-edit-kriteria').action = `/kriteria/${kriteria.id}`;

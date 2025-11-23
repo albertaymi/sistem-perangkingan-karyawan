@@ -141,6 +141,18 @@ class SistemKriteria extends Model
     }
 
     /**
+     * Relasi: Penilaian yang menggunakan dropdown option ini
+     * Untuk level 3 (dropdown options), check if nilai matches this option's nilai_tetap
+     * Note: Since penilaian stores nilai (not id_dropdown_option), we need to check parent's penilaian
+     */
+    public function penilaianAsOption()
+    {
+        // For dropdown options (level 3), check if parent sub-kriteria has penilaian with matching nilai
+        return $this->hasMany(Penilaian::class, 'id_sub_kriteria', 'id_parent')
+            ->where('nilai', $this->nilai_tetap);
+    }
+
+    /**
      * Helper: Cek apakah ini kriteria utama (level 1)
      */
     public function isKriteriaUtama(): bool

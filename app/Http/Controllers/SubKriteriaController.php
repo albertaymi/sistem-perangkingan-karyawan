@@ -22,6 +22,9 @@ class SubKriteriaController extends Controller
             'tipe_input' => 'required|in:angka,rating,dropdown',
             'nilai_min' => 'nullable|numeric',
             'nilai_max' => 'nullable|numeric|gt:nilai_min',
+            'dropdown_options' => 'required_if:tipe_input,dropdown|array|min:2',
+            'dropdown_options.*.nama' => 'required_with:dropdown_options|string|max:100',
+            'dropdown_options.*.nilai_tetap' => 'required_with:dropdown_options|numeric',
         ], [
             'nama_kriteria.required' => 'Nama sub-kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama sub-kriteria maksimal 100 karakter',
@@ -34,6 +37,10 @@ class SubKriteriaController extends Controller
             'nilai_min.numeric' => 'Nilai min harus berupa angka',
             'nilai_max.numeric' => 'Nilai max harus berupa angka',
             'nilai_max.gt' => 'Nilai max harus lebih besar dari nilai min',
+            'dropdown_options.required_if' => 'Dropdown options wajib diisi untuk tipe input dropdown',
+            'dropdown_options.min' => 'Minimal 2 pilihan untuk dropdown options',
+            'dropdown_options.*.nama.required_with' => 'Nama option wajib diisi',
+            'dropdown_options.*.nilai_tetap.required_with' => 'Nilai tetap wajib diisi',
         ]);
 
         // Validasi total bobot sub-kriteria tidak boleh lebih dari 100%
@@ -62,7 +69,7 @@ class SubKriteriaController extends Controller
             ->max('urutan') ?? 0;
 
         // Create sub-kriteria
-        SistemKriteria::create([
+        $subKriteria = SistemKriteria::create([
             'id_parent' => $kriteriaId,
             'nama_kriteria' => $request->nama_kriteria,
             'deskripsi' => $request->deskripsi,
@@ -80,6 +87,29 @@ class SubKriteriaController extends Controller
             'is_active' => true,
         ]);
 
+        // Create dropdown options if tipe_input is dropdown
+        if ($request->tipe_input === 'dropdown' && $request->has('dropdown_options')) {
+            foreach ($request->dropdown_options as $index => $option) {
+                SistemKriteria::create([
+                    'id_parent' => $subKriteria->id,
+                    'nama_kriteria' => $option['nama'],
+                    'deskripsi' => null,
+                    'tipe_kriteria' => null,
+                    'bobot' => null,
+                    'tipe_input' => null,
+                    'nilai_min' => null,
+                    'nilai_max' => null,
+                    'nilai_tetap' => $option['nilai_tetap'],
+                    'level' => 3, // Level 3 for dropdown options
+                    'urutan' => $index + 1,
+                    'assigned_to_supervisor_id' => null,
+                    'created_by_super_admin_id' => auth()->user()->role === 'super_admin' ? auth()->id() : null,
+                    'created_by_hrd_id' => auth()->user()->role === 'hrd' ? auth()->id() : null,
+                    'is_active' => true,
+                ]);
+            }
+        }
+
         return redirect()->route('kriteria.detail', $kriteriaId)
             ->with('success', 'Sub-kriteria berhasil ditambahkan');
     }
@@ -91,6 +121,7 @@ class SubKriteriaController extends Controller
     {
         $subKriteria = SistemKriteria::where('level', 2)
             ->where('id_parent', $kriteriaId)
+            ->with('dropdownOptions') // Eager load dropdown options
             ->findOrFail($id);
 
         return response()->json([
@@ -103,6 +134,14 @@ class SubKriteriaController extends Controller
                 'tipe_input' => $subKriteria->tipe_input,
                 'nilai_min' => $subKriteria->nilai_min,
                 'nilai_max' => $subKriteria->nilai_max,
+                'dropdown_options' => $subKriteria->dropdownOptions->map(function($option) {
+                    return [
+                        'id' => $option->id,
+                        'nama_kriteria' => $option->nama_kriteria,
+                        'nilai_tetap' => $option->nilai_tetap,
+                        'urutan' => $option->urutan,
+                    ];
+                }),
             ]
         ]);
     }
@@ -125,6 +164,9 @@ class SubKriteriaController extends Controller
             'tipe_input' => 'required|in:angka,rating,dropdown',
             'nilai_min' => 'nullable|numeric',
             'nilai_max' => 'nullable|numeric|gt:nilai_min',
+            'dropdown_options' => 'required_if:tipe_input,dropdown|array|min:2',
+            'dropdown_options.*.nama' => 'required_with:dropdown_options|string|max:100',
+            'dropdown_options.*.nilai_tetap' => 'required_with:dropdown_options|numeric',
         ], [
             'nama_kriteria.required' => 'Nama sub-kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama sub-kriteria maksimal 100 karakter',
@@ -137,6 +179,10 @@ class SubKriteriaController extends Controller
             'nilai_min.numeric' => 'Nilai min harus berupa angka',
             'nilai_max.numeric' => 'Nilai max harus berupa angka',
             'nilai_max.gt' => 'Nilai max harus lebih besar dari nilai min',
+            'dropdown_options.required_if' => 'Dropdown options wajib diisi untuk tipe input dropdown',
+            'dropdown_options.min' => 'Minimal 2 pilihan untuk dropdown options',
+            'dropdown_options.*.nama.required_with' => 'Nama option wajib diisi',
+            'dropdown_options.*.nilai_tetap.required_with' => 'Nilai tetap wajib diisi',
         ]);
 
         // Validasi total bobot (exclude sub-kriteria yang sedang diedit)
@@ -169,6 +215,42 @@ class SubKriteriaController extends Controller
             'nilai_min' => $request->tipe_input !== 'dropdown' ? $request->nilai_min : null,
             'nilai_max' => $request->tipe_input !== 'dropdown' ? $request->nilai_max : null,
         ]);
+
+        // Sync dropdown options if tipe_input is dropdown
+        if ($request->tipe_input === 'dropdown') {
+            // Delete all existing dropdown options for this sub-kriteria
+            SistemKriteria::where('id_parent', $subKriteria->id)
+                ->where('level', 3)
+                ->delete();
+
+            // Create new dropdown options
+            if ($request->has('dropdown_options')) {
+                foreach ($request->dropdown_options as $index => $option) {
+                    SistemKriteria::create([
+                        'id_parent' => $subKriteria->id,
+                        'nama_kriteria' => $option['nama'],
+                        'deskripsi' => null,
+                        'tipe_kriteria' => null,
+                        'bobot' => null,
+                        'tipe_input' => null,
+                        'nilai_min' => null,
+                        'nilai_max' => null,
+                        'nilai_tetap' => $option['nilai_tetap'],
+                        'level' => 3, // Level 3 for dropdown options
+                        'urutan' => $index + 1,
+                        'assigned_to_supervisor_id' => null,
+                        'created_by_super_admin_id' => auth()->user()->role === 'super_admin' ? auth()->id() : null,
+                        'created_by_hrd_id' => auth()->user()->role === 'hrd' ? auth()->id() : null,
+                        'is_active' => true,
+                    ]);
+                }
+            }
+        } else {
+            // If tipe_input changed from dropdown to something else, delete dropdown options
+            SistemKriteria::where('id_parent', $subKriteria->id)
+                ->where('level', 3)
+                ->delete();
+        }
 
         return redirect()->route('kriteria.detail', $kriteriaId)
             ->with('success', 'Sub-kriteria berhasil diupdate');

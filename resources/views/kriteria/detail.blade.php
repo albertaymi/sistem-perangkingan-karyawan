@@ -442,6 +442,26 @@
                         </p>
                     </div>
 
+                    {{-- Conditional Dropdown Options Fields --}}
+                    <div id="dropdown_options_sub_tambah" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-gray-700">Dropdown Options</h4>
+                            <button type="button" onclick="addDropdownOptionSub('tambah')"
+                                class="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors">
+                                <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Tambah Option
+                            </button>
+                        </div>
+                        <div id="options_container_sub_tambah" class="space-y-2">
+                            {{-- Options will be added here dynamically --}}
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">
+                            Tambahkan minimal 2 pilihan untuk dropdown. Contoh: "Lolos", "Tidak Lolos"
+                        </p>
+                    </div>
+
                     {{-- Bobot --}}
                     <div>
                         <label for="bobot_tambah" class="block text-sm font-medium text-gray-700 mb-2">
@@ -561,6 +581,26 @@
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             </div>
                         </div>
+                    </div>
+
+                    {{-- Conditional Dropdown Options Fields --}}
+                    <div id="dropdown_options_sub_edit" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-gray-700">Dropdown Options</h4>
+                            <button type="button" onclick="addDropdownOptionSub('edit')"
+                                class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Tambah Option
+                            </button>
+                        </div>
+                        <div id="options_container_sub_edit" class="space-y-2">
+                            {{-- Options will be added here dynamically --}}
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">
+                            Tambahkan minimal 2 pilihan untuk dropdown. Contoh: "Lolos", "Tidak Lolos"
+                        </p>
                     </div>
 
                     {{-- Bobot --}}
@@ -901,8 +941,13 @@
         function toggleRangeFields(mode) {
             const tipeInput = document.getElementById(`tipe_input_${mode}`).value;
             const rangeFields = document.getElementById(`range_fields_${mode}`);
+            const dropdownOptions = document.getElementById(`dropdown_options_sub_${mode}`);
             const nilaiMin = document.getElementById(`nilai_min_${mode}`);
             const nilaiMax = document.getElementById(`nilai_max_${mode}`);
+
+            // Hide both sections first
+            rangeFields.classList.add('hidden');
+            dropdownOptions.classList.add('hidden');
 
             if (tipeInput === 'angka' || tipeInput === 'rating') {
                 rangeFields.classList.remove('hidden');
@@ -913,14 +958,95 @@
                 if (tipeInput === 'rating') {
                     nilaiMin.value = 1;
                     nilaiMax.value = 5;
+                } else {
+                    nilaiMin.value = '';
+                    nilaiMax.value = '';
+                }
+            } else if (tipeInput === 'dropdown') {
+                dropdownOptions.classList.remove('hidden');
+                nilaiMin.required = false;
+                nilaiMax.required = false;
+                nilaiMin.value = '';
+                nilaiMax.value = '';
+
+                // Initialize with 2 empty options for tambah mode
+                const container = document.getElementById(`options_container_sub_${mode}`);
+                if (mode === 'tambah' && container.children.length === 0) {
+                    addDropdownOptionSub(mode);
+                    addDropdownOptionSub(mode);
                 }
             } else {
-                rangeFields.classList.add('hidden');
                 nilaiMin.required = false;
                 nilaiMax.required = false;
                 nilaiMin.value = '';
                 nilaiMax.value = '';
             }
+        }
+
+        // Counter for dropdown options in sub-kriteria
+        let dropdownOptionSubCounter = { tambah: 0, edit: 0 };
+
+        // Add dropdown option field for sub-kriteria
+        function addDropdownOptionSub(mode) {
+            const container = document.getElementById(`options_container_sub_${mode}`);
+            const index = dropdownOptionSubCounter[mode]++;
+
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'flex items-start gap-2 p-3 bg-white border border-gray-200 rounded-lg';
+            optionDiv.id = `option_item_sub_${mode}_${index}`;
+
+            const buttonColor = mode === 'tambah' ? 'green' : 'blue';
+
+            optionDiv.innerHTML = `
+                <div class="flex-1 grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                            Nama Option <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text"
+                            name="dropdown_options[${index}][nama]"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${buttonColor}-500 focus:border-transparent text-sm"
+                            placeholder="Contoh: Lolos"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                            Nilai Tetap <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number"
+                            name="dropdown_options[${index}][nilai_tetap]"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${buttonColor}-500 focus:border-transparent text-sm"
+                            placeholder="Contoh: 100"
+                            step="0.01"
+                            required>
+                    </div>
+                </div>
+                <button type="button"
+                    onclick="removeDropdownOptionSub(${index}, '${mode}')"
+                    class="mt-6 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Hapus option">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+
+            container.appendChild(optionDiv);
+        }
+
+        // Remove dropdown option field for sub-kriteria
+        function removeDropdownOptionSub(index, mode) {
+            const optionDiv = document.getElementById(`option_item_sub_${mode}_${index}`);
+            if (optionDiv) {
+                optionDiv.remove();
+            }
+        }
+
+        // Clear dropdown options container for sub-kriteria
+        function clearDropdownOptionsSub(mode) {
+            const container = document.getElementById(`options_container_sub_${mode}`);
+            container.innerHTML = '';
+            dropdownOptionSubCounter[mode] = 0;
         }
 
         // Edit Sub-Kriteria
@@ -941,8 +1067,61 @@
                         document.getElementById('nilai_max_edit').value = subKriteria.nilai_max !== null ? subKriteria.nilai_max : '';
                         document.getElementById('bobot_edit').value = Math.round(subKriteria.bobot);
 
+                        // Clear dropdown options container first
+                        clearDropdownOptionsSub('edit');
+
                         // Toggle range fields
                         toggleRangeFields('edit');
+
+                        // Load existing dropdown options if tipe_input is dropdown
+                        if (subKriteria.tipe_input === 'dropdown' && subKriteria.dropdown_options && subKriteria.dropdown_options.length > 0) {
+                            subKriteria.dropdown_options.forEach((option, index) => {
+                                const container = document.getElementById('options_container_sub_edit');
+                                const optionIndex = dropdownOptionSubCounter.edit++;
+
+                                const optionDiv = document.createElement('div');
+                                optionDiv.className = 'flex items-start gap-2 p-3 bg-white border border-gray-200 rounded-lg';
+                                optionDiv.id = `option_item_sub_edit_${optionIndex}`;
+
+                                optionDiv.innerHTML = `
+                                    <div class="flex-1 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">
+                                                Nama Option <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text"
+                                                name="dropdown_options[${optionIndex}][nama]"
+                                                value="${option.nama_kriteria}"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                placeholder="Contoh: Lolos"
+                                                required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">
+                                                Nilai Tetap <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="number"
+                                                name="dropdown_options[${optionIndex}][nilai_tetap]"
+                                                value="${option.nilai_tetap}"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                placeholder="Contoh: 100"
+                                                step="0.01"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <button type="button"
+                                        onclick="removeDropdownOptionSub(${optionIndex}, 'edit')"
+                                        class="mt-6 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="Hapus option">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                `;
+
+                                container.appendChild(optionDiv);
+                            });
+                        }
 
                         // Update form action
                         document.getElementById('form-edit-sub-kriteria').action =

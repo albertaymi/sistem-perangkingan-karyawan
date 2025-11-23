@@ -23,9 +23,21 @@ class PenilaianController extends Controller
         $divisi = $request->query('divisi');
 
         // Get all active sub-kriteria (level 2) yang harus dinilai
-        $totalSubKriteria = SistemKriteria::where('level', 2)
-            ->where('is_active', true)
-            ->count();
+        // Filter by supervisor assignment if logged in as supervisor
+        $subKriteriaQuery = SistemKriteria::where('level', 2)
+            ->where('is_active', true);
+
+        // If supervisor, only count sub-kriteria from assigned kriteria
+        if (auth()->user()->isSupervisor()) {
+            $subKriteriaQuery->whereHas('parent', function ($q) {
+                $q->where(function ($query) {
+                    $query->where('assigned_to_supervisor_id', auth()->id())
+                          ->orWhereNull('assigned_to_supervisor_id');
+                });
+            });
+        }
+
+        $totalSubKriteria = $subKriteriaQuery->count();
 
         // Get all karyawan yang bisa dinilai
         $karyawanQuery = User::where('role', 'karyawan')
@@ -122,8 +134,19 @@ class PenilaianController extends Controller
         $karyawan = User::findOrFail($karyawanId);
 
         // Get all active kriteria dengan sub-kriteria
-        $kriteria = SistemKriteria::where('level', 1)
-            ->where('is_active', true)
+        // Filter by supervisor if logged in as supervisor
+        $kriteriaQuery = SistemKriteria::where('level', 1)
+            ->where('is_active', true);
+
+        // If supervisor, only show assigned kriteria
+        if (auth()->user()->isSupervisor()) {
+            $kriteriaQuery->where(function ($q) {
+                $q->where('assigned_to_supervisor_id', auth()->id())
+                  ->orWhereNull('assigned_to_supervisor_id'); // Allow kriteria without assignment
+            });
+        }
+
+        $kriteria = $kriteriaQuery
             ->with(['subKriteria' => function ($query) {
                 $query->where('is_active', true)->orderBy('urutan', 'asc');
             }])
@@ -203,8 +226,19 @@ class PenilaianController extends Controller
             $karyawan = User::findOrFail($karyawanId);
 
             // Get all active kriteria dengan sub-kriteria & dropdown options
-            $kriteria = SistemKriteria::where('level', 1)
-                ->where('is_active', true)
+            // Filter by supervisor if logged in as supervisor
+            $kriteriaQuery = SistemKriteria::where('level', 1)
+                ->where('is_active', true);
+
+            // If supervisor, only show assigned kriteria
+            if (auth()->user()->isSupervisor()) {
+                $kriteriaQuery->where(function ($q) {
+                    $q->where('assigned_to_supervisor_id', auth()->id())
+                      ->orWhereNull('assigned_to_supervisor_id'); // Allow kriteria without assignment
+                });
+            }
+
+            $kriteria = $kriteriaQuery
                 ->with(['subKriteria' => function ($query) {
                     $query->where('is_active', true)
                         ->with(['dropdownOptions' => function ($q) {
