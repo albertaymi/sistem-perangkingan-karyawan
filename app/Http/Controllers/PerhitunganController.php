@@ -23,46 +23,198 @@ class PerhitunganController extends Controller
      */
     public function index(Request $request)
     {
-        // Get unique periode from penilaian
-        $periodeList = Penilaian::select('bulan', 'tahun', 'periode_label')
+        // Get selected periode (default to current month/year)
+        $bulan = $request->query('bulan', date('n'));
+        $tahun = $request->query('tahun', date('Y'));
+
+        // Get available years (5 years back + existing penilaian years)
+        $tahunList = collect();
+        $currentYear = (int) date('Y');
+        for ($y = $currentYear; $y >= $currentYear - 5; $y--) {
+            $tahunList->push($y);
+        }
+
+        $existingYears = Penilaian::select('tahun')->distinct()->pluck('tahun');
+        if ($existingYears->isNotEmpty()) {
+            $tahunList = $tahunList->merge($existingYears)
+                ->unique()
+                ->sort()
+                ->values()
+                ->reverse();
+        }
+
+        // Build periode label
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
+
+        // Get all active karyawan
+        $karyawanAktif = User::where('role', 'karyawan')
+            ->where('status_akun', 'aktif')
+            ->count();
+
+        // Get karyawan with penilaian in this periode
+        $karyawanDenganPenilaian = Penilaian::byPeriode($bulan, $tahun)
+            ->distinct('id_karyawan')
+            ->pluck('id_karyawan');
+
+        $dataPenilaianLengkap = $karyawanDenganPenilaian->count();
+        $dataTidakLengkap = $karyawanAktif - $dataPenilaianLengkap;
+
+        // Get all active kriteria
+        $kriteriaAktif = SistemKriteria::where('level', 1)
+            ->where('is_active', true)
+            ->orderBy('urutan')
+            ->get();
+
+        // Calculate validation status per kriteria
+        $validasiKriteria = [];
+        foreach ($kriteriaAktif as $kriteria) {
+            $validation = $this->validateKriteriaCompletion($kriteria->id, $bulan, $tahun);
+            $validasiKriteria[] = [
+                'kriteria' => $kriteria,
+                'karyawan_lengkap' => $validation['complete_count'],
+                'total_karyawan' => $validation['total_karyawan'],
+                'is_complete' => $validation['is_complete'],
+                'karyawan_tidak_lengkap' => $validation['incomplete_employees'],
+            ];
+        }
+
+        // Check if all data is complete for TOPSIS generation
+        $allDataComplete = collect($validasiKriteria)->every(function ($item) {
+            return $item['is_complete'];
+        });
+
+        // Calculate bobot kriteria validation
+        $totalBobot = $kriteriaAktif->sum('bobot');
+        $bobotValid = abs($totalBobot - 100) < 0.01; // Allow small floating point variance
+
+        // Check if ranking already exists
+        $hasilExists = HasilTopsis::byPeriode($bulan, $tahun)->exists();
+
+        // Get history of TOPSIS generations
+        $riwayatGenerate = HasilTopsis::select('bulan', 'tahun', 'periode_label', 'tanggal_generate',
+                                               'generated_by_super_admin_id', 'generated_by_hrd_id')
             ->distinct()
-            ->orderBy('tahun', 'desc')
-            ->orderBy('bulan', 'desc')
+            ->with(['generatedBySuperAdmin', 'generatedByHRD'])
+            ->orderByRaw('tahun DESC, bulan DESC')
+            ->orderBy('tanggal_generate', 'desc')
             ->get()
-            ->map(function ($item) {
-                // Check if ranking sudah di-generate untuk periode ini
-                $hasilExists = HasilTopsis::byPeriode($item->bulan, $item->tahun)->exists();
-                $jumlahKaryawan = Penilaian::byPeriode($item->bulan, $item->tahun)
-                    ->distinct('id_karyawan')
-                    ->count('id_karyawan');
+            ->unique(function ($item) {
+                return $item->bulan . '-' . $item->tahun;
+            })
+            ->take(10);
 
-                // Get tanggal generate terakhir jika ada
-                $lastGenerated = null;
-                $generatedBy = null;
-                if ($hasilExists) {
-                    $latestHasil = HasilTopsis::byPeriode($item->bulan, $item->tahun)
-                        ->orderBy('tanggal_generate', 'desc')
-                        ->first();
+        return view('perhitungan.index', compact(
+            'bulan',
+            'tahun',
+            'tahunList',
+            'periodeLabel',
+            'karyawanAktif',
+            'dataPenilaianLengkap',
+            'dataTidakLengkap',
+            'kriteriaAktif',
+            'validasiKriteria',
+            'allDataComplete',
+            'bobotValid',
+            'hasilExists',
+            'riwayatGenerate'
+        ));
+    }
 
-                    if ($latestHasil) {
-                        $lastGenerated = $latestHasil->tanggal_generate;
-                        $generatedBy = $latestHasil->generatedBySuperAdmin
-                            ?? $latestHasil->generatedByHRD;
-                    }
-                }
+    /**
+     * Validate if all employees have complete assessment for a specific kriteria
+     *
+     * @param int $kriteriaId
+     * @param int $bulan
+     * @param int $tahun
+     * @return array
+     */
+    private function validateKriteriaCompletion($kriteriaId, $bulan, $tahun)
+    {
+        // Get the kriteria
+        $kriteria = SistemKriteria::find($kriteriaId);
 
-                return [
-                    'bulan' => $item->bulan,
-                    'tahun' => $item->tahun,
-                    'periode_label' => $item->periode_label,
-                    'has_ranking' => $hasilExists,
-                    'jumlah_karyawan' => $jumlahKaryawan,
-                    'last_generated' => $lastGenerated,
-                    'generated_by' => $generatedBy,
+        if (!$kriteria || $kriteria->level !== 1) {
+            return [
+                'is_complete' => false,
+                'complete_count' => 0,
+                'total_karyawan' => 0,
+                'incomplete_employees' => [],
+            ];
+        }
+
+        // Get all active karyawan
+        $allKaryawan = User::where('role', 'karyawan')
+            ->where('status_akun', 'aktif')
+            ->get();
+
+        $totalKaryawan = $allKaryawan->count();
+        $completeCount = 0;
+        $incompleteEmployees = [];
+
+        // Check if this is a SINGLE KRITERIA (kriteria tunggal with tipe_input)
+        $isSingleKriteria = !empty($kriteria->tipe_input);
+        $subKriteriaIds = $kriteria->subKriteria()
+            ->where('is_active', true)
+            ->pluck('id');
+
+        // If kriteria has no sub-kriteria and no tipe_input, it's invalid/incomplete setup
+        if ($subKriteriaIds->isEmpty() && !$isSingleKriteria) {
+            return [
+                'is_complete' => true, // Don't block TOPSIS for setup issues
+                'complete_count' => 0,
+                'total_karyawan' => 0,
+                'incomplete_employees' => [],
+            ];
+        }
+
+        foreach ($allKaryawan as $karyawan) {
+            $isComplete = false;
+
+            if ($isSingleKriteria) {
+                // SINGLE KRITERIA: Check penilaian with id_kriteria and id_sub_kriteria = NULL
+                $penilaianExists = Penilaian::where('id_karyawan', $karyawan->id)
+                    ->where('id_kriteria', $kriteria->id)
+                    ->whereNull('id_sub_kriteria')
+                    ->byPeriode($bulan, $tahun)
+                    ->exists();
+
+                $isComplete = $penilaianExists;
+            } else {
+                // MULTI SUB-KRITERIA: Check if karyawan has penilaian for ALL sub-kriteria
+                $penilaianCount = Penilaian::where('id_karyawan', $karyawan->id)
+                    ->whereIn('id_sub_kriteria', $subKriteriaIds)
+                    ->byPeriode($bulan, $tahun)
+                    ->count();
+
+                $isComplete = ($penilaianCount === $subKriteriaIds->count());
+            }
+
+            if ($isComplete) {
+                $completeCount++;
+            } else {
+                $incompleteEmployees[] = [
+                    'id' => $karyawan->id,
+                    'nama' => $karyawan->nama,
+                    'nik' => $karyawan->nik,
+                    'penilaian_count' => $isSingleKriteria ? 0 : ($penilaianCount ?? 0),
+                    'total_required' => $isSingleKriteria ? 1 : $subKriteriaIds->count(),
+                    'is_single_kriteria' => $isSingleKriteria,
                 ];
-            });
+            }
+        }
 
-        return view('perhitungan.index', compact('periodeList'));
+        return [
+            'is_complete' => $completeCount === $totalKaryawan && $totalKaryawan > 0,
+            'complete_count' => $completeCount,
+            'total_karyawan' => $totalKaryawan,
+            'incomplete_employees' => $incompleteEmployees,
+            'is_single_kriteria' => $isSingleKriteria,
+        ];
     }
 
     /**
@@ -196,7 +348,8 @@ class PerhitunganController extends Controller
                 ->pluck('id_karyawan');
 
             if ($karyawanIds->isEmpty()) {
-                return redirect()->route('perhitungan.index')
+                DB::rollBack();
+                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun])
                     ->with('error', 'Tidak ada data penilaian untuk periode ini.');
             }
 
@@ -207,8 +360,64 @@ class PerhitunganController extends Controller
                 ->get();
 
             if ($kriteriaList->isEmpty()) {
-                return redirect()->route('perhitungan.index')
+                DB::rollBack();
+                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun])
                     ->with('error', 'Tidak ada kriteria aktif.');
+            }
+
+            // STEP 2.1: Validate bobot kriteria
+            $totalBobot = $kriteriaList->sum('bobot');
+            if (abs($totalBobot - 100) >= 0.01) {
+                DB::rollBack();
+                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun])
+                    ->with('error', 'Total bobot kriteria harus 100%. Saat ini: ' . number_format($totalBobot, 2) . '%');
+            }
+
+            // STEP 2.2: Validate all karyawan have complete penilaian for all kriteria
+            $allKaryawan = User::where('role', 'karyawan')
+                ->where('status_akun', 'aktif')
+                ->get();
+
+            $incompleteKaryawan = [];
+            $incompleteKriteria = [];
+
+            foreach ($kriteriaList as $kriteria) {
+                $validation = $this->validateKriteriaCompletion($kriteria->id, $bulan, $tahun);
+
+                if (!$validation['is_complete']) {
+                    $incompleteKriteria[] = $kriteria->nama_kriteria;
+
+                    foreach ($validation['incomplete_employees'] as $employee) {
+                        $key = $employee['id'];
+                        if (!isset($incompleteKaryawan[$key])) {
+                            $incompleteKaryawan[$key] = [
+                                'nama' => $employee['nama'],
+                                'nik' => $employee['nik'],
+                                'kriteria_tidak_lengkap' => [],
+                            ];
+                        }
+                        $incompleteKaryawan[$key]['kriteria_tidak_lengkap'][] = $kriteria->nama_kriteria;
+                    }
+                }
+            }
+
+            if (!empty($incompleteKaryawan)) {
+                DB::rollBack();
+
+                // Build error message
+                $karyawanList = collect($incompleteKaryawan)->map(function ($item) {
+                    return $item['nama'] . ' (' . $item['nik'] . ')';
+                })->take(5)->implode(', ');
+
+                $errorMsg = 'TOPSIS tidak dapat dijalankan. Ada ' . count($incompleteKaryawan) . ' karyawan dengan data penilaian tidak lengkap';
+                if (count($incompleteKaryawan) <= 5) {
+                    $errorMsg .= ': ' . $karyawanList;
+                } else {
+                    $errorMsg .= ' (menampilkan 5 dari ' . count($incompleteKaryawan) . '): ' . $karyawanList . ', dll.';
+                }
+
+                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun])
+                    ->with('error', $errorMsg);
             }
 
             // STEP 3: Build decision matrix (nilai per karyawan per kriteria)
