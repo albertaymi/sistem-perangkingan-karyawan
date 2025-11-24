@@ -253,8 +253,9 @@
                                         <input type="number" name="penilaian[{{ $kriteriaIndex }}_0][nilai]"
                                             id="nilai_{{ $kriteriaItem->id }}_{{ $kriteriaItem->id }}"
                                             min="{{ $kriteriaItem->nilai_min }}" max="{{ $kriteriaItem->nilai_max }}"
-                                            step="0.01"
-                                            value="{{ $existingPenilaian->get($kriteriaItem->id)->nilai ?? '' }}" required
+                                            step="1"
+                                            value="{{ $existingPenilaian->has($kriteriaItem->id) ? (int) $existingPenilaian->get($kriteriaItem->id)->nilai : '' }}"
+                                            required
                                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                             placeholder="Masukkan nilai ({{ $kriteriaItem->nilai_min }} - {{ $kriteriaItem->nilai_max }})">
                                         <p class="mt-1 text-xs text-gray-500">
@@ -357,7 +358,8 @@
                                                 id="nilai_{{ $kriteriaItem->id }}_{{ $subItem->id }}"
                                                 min="{{ $subItem->nilai_min }}" max="{{ $subItem->nilai_max }}"
                                                 step="1"
-                                                value="{{ $existingPenilaian->get($subItem->id)->nilai ?? '' }}" required
+                                                value="{{ $existingPenilaian->has($subItem->id) ? (int) $existingPenilaian->get($subItem->id)->nilai : '' }}"
+                                                required
                                                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                                 placeholder="Masukkan nilai ({{ $subItem->nilai_min }} - {{ $subItem->nilai_max }})">
                                             <p class="mt-1 text-xs text-gray-500">
