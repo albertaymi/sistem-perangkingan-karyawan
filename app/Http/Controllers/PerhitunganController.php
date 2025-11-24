@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Exports\RankingExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PerhitunganTopsisService;
 
 class PerhitunganController extends Controller
 {
@@ -420,128 +421,24 @@ class PerhitunganController extends Controller
                     ->with('error', $errorMsg);
             }
 
-            // STEP 3: Build decision matrix (nilai per karyawan per kriteria)
-            $decisionMatrix = [];
-            $nilaiPerKriteria = []; // For storing in hasil_topsis
+            // STEP 3: Build decision matrix dengan standardisasi yang benar (sesuai skripsi)
+            $topsisService = new PerhitunganTopsisService();
+            [$decisionMatrix, $nilaiPerKriteria] = $topsisService->buatMatriksKeputusan(
+                $karyawanIds->toArray(),
+                $kriteriaList,
+                $bulan,
+                $tahun
+            );
 
-            foreach ($karyawanIds as $karyawanId) {
-                $decisionMatrix[$karyawanId] = [];
-                $nilaiPerKriteria[$karyawanId] = [];
+            // STEP 4-8: Calculate TOPSIS (normalisasi, weighted, ideal solutions, distances, preference)
+            $topsisResult = $topsisService->hitungTOPSIS($decisionMatrix, $kriteriaList);
 
-                foreach ($kriteriaList as $kriteria) {
-                    // Get average nilai for this kriteria (aggregate dari sub-kriteria)
-                    // Menggunakan weighted average berdasarkan bobot sub-kriteria
-                    $subKriteria = $kriteria->subKriteria()->where('is_active', true)->get();
-
-                    $totalNilai = 0;
-                    $totalBobot = 0;
-
-                    foreach ($subKriteria as $sub) {
-                        $penilaian = Penilaian::byKaryawan($karyawanId)
-                            ->byPeriode($bulan, $tahun)
-                            ->where('id_sub_kriteria', $sub->id)
-                            ->first();
-
-                        if ($penilaian) {
-                            $totalNilai += $penilaian->nilai * $sub->bobot;
-                            $totalBobot += $sub->bobot;
-                        }
-                    }
-
-                    // Weighted average
-                    $avgNilai = $totalBobot > 0 ? $totalNilai / $totalBobot : 0;
-
-                    $decisionMatrix[$karyawanId][$kriteria->id] = $avgNilai;
-                    $nilaiPerKriteria[$karyawanId][$kriteria->nama_kriteria] = round($avgNilai, 2);
-                }
-            }
-
-            // STEP 4: Normalisasi matriks (menggunakan vector normalization)
-            $normalizedMatrix = [];
-
-            foreach ($kriteriaList as $kriteria) {
-                // Calculate sum of squares for this kriteria
-                $sumOfSquares = 0;
-                foreach ($karyawanIds as $karyawanId) {
-                    $sumOfSquares += pow($decisionMatrix[$karyawanId][$kriteria->id], 2);
-                }
-
-                $sqrtSum = sqrt($sumOfSquares);
-
-                // Normalize each value
-                foreach ($karyawanIds as $karyawanId) {
-                    $normalizedMatrix[$karyawanId][$kriteria->id] =
-                        $sqrtSum > 0
-                            ? $decisionMatrix[$karyawanId][$kriteria->id] / $sqrtSum
-                            : 0;
-                }
-            }
-
-            // STEP 5: Weighted normalized matrix (kalikan dengan bobot)
-            $weightedMatrix = [];
-
-            foreach ($karyawanIds as $karyawanId) {
-                $weightedMatrix[$karyawanId] = [];
-                foreach ($kriteriaList as $kriteria) {
-                    $weightedMatrix[$karyawanId][$kriteria->id] =
-                        $normalizedMatrix[$karyawanId][$kriteria->id] * ($kriteria->bobot / 100);
-                }
-            }
-
-            // STEP 6: Determine ideal positive (A+) and ideal negative (A-) solutions
-            $idealPositive = [];
-            $idealNegative = [];
-
-            foreach ($kriteriaList as $kriteria) {
-                $values = [];
-                foreach ($karyawanIds as $karyawanId) {
-                    $values[] = $weightedMatrix[$karyawanId][$kriteria->id];
-                }
-
-                if ($kriteria->tipe_kriteria === 'benefit') {
-                    // Benefit: max is ideal positive, min is ideal negative
-                    $idealPositive[$kriteria->id] = max($values);
-                    $idealNegative[$kriteria->id] = min($values);
-                } else {
-                    // Cost: min is ideal positive, max is ideal negative
-                    $idealPositive[$kriteria->id] = min($values);
-                    $idealNegative[$kriteria->id] = max($values);
-                }
-            }
-
-            // STEP 7: Calculate distance to ideal positive (D+) and ideal negative (D-)
-            $distances = [];
-
-            foreach ($karyawanIds as $karyawanId) {
-                $dPlus = 0; // Distance to ideal positive
-                $dMinus = 0; // Distance to ideal negative
-
-                foreach ($kriteriaList as $kriteria) {
-                    $value = $weightedMatrix[$karyawanId][$kriteria->id];
-
-                    $dPlus += pow($value - $idealPositive[$kriteria->id], 2);
-                    $dMinus += pow($value - $idealNegative[$kriteria->id], 2);
-                }
-
-                $distances[$karyawanId] = [
-                    'dPlus' => sqrt($dPlus),
-                    'dMinus' => sqrt($dMinus),
-                ];
-            }
-
-            // STEP 8: Calculate preference value (V = D- / (D+ + D-))
-            $preferenceValues = [];
-
-            foreach ($karyawanIds as $karyawanId) {
-                $dPlus = $distances[$karyawanId]['dPlus'];
-                $dMinus = $distances[$karyawanId]['dMinus'];
-
-                $preference = ($dPlus + $dMinus) > 0
-                    ? $dMinus / ($dPlus + $dMinus)
-                    : 0;
-
-                $preferenceValues[$karyawanId] = $preference;
-            }
+            $normalizedMatrix = $topsisResult['matriksTernormalisasi'];
+            $weightedMatrix = $topsisResult['matriksTerbobot'];
+            $idealPositive = $topsisResult['idealPositif'];
+            $idealNegative = $topsisResult['idealNegatif'];
+            $distances = $topsisResult['jarak'];
+            $preferenceValues = $topsisResult['nilaiPreferensi'];
 
             // STEP 9: Rank based on preference value (highest first)
             arsort($preferenceValues);
