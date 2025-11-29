@@ -275,25 +275,121 @@ class PerhitunganController extends Controller
 
     /**
      * Display hasil ranking index untuk semua role.
-     * Redirect ke periode terbaru yang sudah di-generate
+     * Menampilkan ranking dengan fitur filter periode, divisi, dan search
      *
      * Authorization: Semua role yang login
      */
-    public function rankingIndex()
+    public function rankingIndex(Request $request)
     {
-        // Get periode terbaru yang sudah ada ranking-nya
-        $latestHasil = HasilTopsis::select('bulan', 'tahun')
+        // Get available periods dari hasil TOPSIS (unique bulan+tahun)
+        $availablePeriods = HasilTopsis::select('bulan', 'tahun', 'periode_label')
             ->distinct()
             ->orderByRaw('tahun DESC, bulan DESC')
-            ->first();
+            ->get()
+            ->unique(function ($item) {
+                return $item->bulan . '-' . $item->tahun;
+            })
+            ->values();
 
-        if (!$latestHasil) {
+        if ($availablePeriods->isEmpty()) {
             return redirect()->route('dashboard')
                 ->with('error', 'Belum ada data ranking yang tersedia.');
         }
 
-        // Redirect ke halaman show periode terbaru
-        return redirect()->route('ranking.show', [$latestHasil->bulan, $latestHasil->tahun]);
+        // Get filter parameters
+        $bulan = $request->query('bulan');
+        $tahun = $request->query('tahun');
+        $divisiFilter = $request->query('divisi', '');
+        $search = $request->query('search', '');
+
+        // If no periode selected, use latest
+        if (!$bulan || !$tahun) {
+            $latest = $availablePeriods->first();
+            $bulan = $latest->bulan;
+            $tahun = $latest->tahun;
+        }
+
+        // Get list of available divisi_filter untuk periode ini
+        $divisiList = HasilTopsis::byPeriode($bulan, $tahun)
+            ->select('divisi_filter')
+            ->distinct()
+            ->pluck('divisi_filter')
+            ->filter(function ($value) {
+                return $value !== null;
+            })
+            ->sort()
+            ->values();
+
+        // Build query untuk hasil ranking dengan filter
+        $hasilQuery = HasilTopsis::byPeriode($bulan, $tahun)
+            ->with('karyawan');
+
+        // Filter by divisi_filter field (NULL = Semua Divisi)
+        if (!empty($divisiFilter)) {
+            $hasilQuery->where('divisi_filter', $divisiFilter);
+        }
+
+        // Filter by search (nama atau NIK)
+        if (!empty($search)) {
+            $hasilQuery->whereHas('karyawan', function ($query) use ($search) {
+                $query->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
+            });
+        }
+
+        $hasilRanking = $hasilQuery->orderedByRanking()->get();
+
+        // Calculate statistics dari hasil yang sudah difilter
+        $totalKaryawan = $hasilRanking->count();
+
+        if ($totalKaryawan > 0) {
+            $skorTertinggi = $hasilRanking->max('skor_topsis');
+            $skorTerendah = $hasilRanking->min('skor_topsis');
+            $rataRataSkor = $hasilRanking->avg('skor_topsis');
+
+            $karyawanTertinggi = $hasilRanking->where('skor_topsis', $skorTertinggi)->first();
+            $karyawanTerendah = $hasilRanking->where('skor_topsis', $skorTerendah)->first();
+        } else {
+            $skorTertinggi = 0;
+            $skorTerendah = 0;
+            $rataRataSkor = 0;
+            $karyawanTertinggi = null;
+            $karyawanTerendah = null;
+        }
+
+        // Get periode label
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
+
+        // Get tanggal generate info (dari hasil yang sudah difilter)
+        $latestHasil = $hasilRanking->first();
+        $tanggalGenerate = $latestHasil ? $latestHasil->tanggal_generate : null;
+        $generatedBy = $latestHasil
+            ? ($latestHasil->generatedBySuperAdmin ?? $latestHasil->generatedByHRD)
+            : null;
+
+        return view('ranking.index', compact(
+            'hasilRanking',
+            'bulan',
+            'tahun',
+            'periodeLabel',
+            'tanggalGenerate',
+            'generatedBy',
+            'availablePeriods',
+            'divisiList',
+            'divisiFilter',
+            'search',
+            'totalKaryawan',
+            'skorTertinggi',
+            'skorTerendah',
+            'rataRataSkor',
+            'karyawanTertinggi',
+            'karyawanTerendah'
+        ));
     }
 
     /**
@@ -603,7 +699,7 @@ class PerhitunganController extends Controller
      * - Karyawan: hanya bisa export data pribadi
      * - Admin/HRD/Supervisor: bisa export semua data
      */
-    public function exportExcel($bulan, $tahun)
+    public function exportExcel(Request $request, $bulan, $tahun)
     {
         // Get periode label
         $namaBulan = [
@@ -619,16 +715,28 @@ class PerhitunganController extends Controller
                 ->with('error', 'Ranking untuk periode ini belum di-generate.');
         }
 
+        // Get filter parameters
+        $divisiFilter = $request->query('divisi', '');
+        $search = $request->query('search', '');
+
         // Tentukan apakah export pribadi atau semua
         $idKaryawan = null;
         if (auth()->user()->isKaryawan()) {
             $idKaryawan = auth()->id();
         }
 
-        $fileName = 'Ranking_' . $periodeLabel . ($idKaryawan ? '_' . auth()->user()->nama : '') . '.xlsx';
+        // Build filename dengan info filter
+        $fileName = 'Ranking_' . $periodeLabel;
+        if (!empty($divisiFilter)) {
+            $fileName .= '_' . $divisiFilter;
+        }
+        if ($idKaryawan) {
+            $fileName .= '_' . auth()->user()->nama;
+        }
+        $fileName .= '.xlsx';
 
         return Excel::download(
-            new RankingExport($bulan, $tahun, $periodeLabel, $idKaryawan),
+            new RankingExport($bulan, $tahun, $periodeLabel, $idKaryawan, $divisiFilter, $search),
             $fileName
         );
     }
@@ -640,7 +748,7 @@ class PerhitunganController extends Controller
      * - Karyawan: hanya bisa export data pribadi (laporan personal)
      * - Admin/HRD/Supervisor: bisa export semua data (laporan lengkap)
      */
-    public function exportPDF($bulan, $tahun)
+    public function exportPDF(Request $request, $bulan, $tahun)
     {
         // Get periode label
         $namaBulan = [
@@ -656,33 +764,47 @@ class PerhitunganController extends Controller
                 ->with('error', 'Ranking untuk periode ini belum di-generate.');
         }
 
+        // Get filter parameters
+        $divisiFilter = $request->query('divisi', '');
+        $search = $request->query('search', '');
+
         // Jika karyawan, export laporan pribadi
         if (auth()->user()->isKaryawan()) {
-            return $this->exportPersonalPDF($bulan, $tahun, $periodeLabel);
+            return $this->exportPersonalPDF($bulan, $tahun, $periodeLabel, $divisiFilter, $search);
         }
 
         // Jika admin/HRD/supervisor, export laporan lengkap
-        return $this->exportFullPDF($bulan, $tahun, $periodeLabel);
+        return $this->exportFullPDF($bulan, $tahun, $periodeLabel, $divisiFilter, $search);
     }
 
     /**
      * Export personal ranking report to PDF (untuk karyawan)
      */
-    private function exportPersonalPDF($bulan, $tahun, $periodeLabel)
+    private function exportPersonalPDF($bulan, $tahun, $periodeLabel, $divisiFilter = '', $search = '')
     {
         // Get hasil untuk karyawan yang login
-        $hasil = HasilTopsis::with('karyawan')
+        $hasilQuery = HasilTopsis::with('karyawan')
             ->byPeriode($bulan, $tahun)
-            ->where('id_karyawan', auth()->id())
-            ->first();
+            ->where('id_karyawan', auth()->id());
+
+        // Filter by divisi_filter if provided
+        if (!empty($divisiFilter)) {
+            $hasilQuery->where('divisi_filter', $divisiFilter);
+        }
+
+        $hasil = $hasilQuery->first();
 
         if (!$hasil) {
             return redirect()->back()
                 ->with('error', 'Data ranking Anda tidak ditemukan untuk periode ini.');
         }
 
-        // Get total karyawan untuk konteks
-        $totalKaryawan = HasilTopsis::byPeriode($bulan, $tahun)->count();
+        // Get total karyawan untuk konteks (dengan filter yang sama)
+        $totalKaryawanQuery = HasilTopsis::byPeriode($bulan, $tahun);
+        if (!empty($divisiFilter)) {
+            $totalKaryawanQuery->where('divisi_filter', $divisiFilter);
+        }
+        $totalKaryawan = $totalKaryawanQuery->count();
 
         // Get detail perhitungan
         $detailPerhitungan = $hasil->detail_perhitungan;
@@ -719,13 +841,26 @@ class PerhitunganController extends Controller
     /**
      * Export full ranking report to PDF (untuk admin/HRD/supervisor)
      */
-    private function exportFullPDF($bulan, $tahun, $periodeLabel)
+    private function exportFullPDF($bulan, $tahun, $periodeLabel, $divisiFilter = '', $search = '')
     {
-        // Get all hasil ranking untuk periode ini
-        $hasilRanking = HasilTopsis::with('karyawan')
-            ->byPeriode($bulan, $tahun)
-            ->orderedByRanking()
-            ->get();
+        // Get all hasil ranking untuk periode ini dengan filter
+        $hasilQuery = HasilTopsis::with('karyawan')
+            ->byPeriode($bulan, $tahun);
+
+        // Filter by divisi_filter
+        if (!empty($divisiFilter)) {
+            $hasilQuery->where('divisi_filter', $divisiFilter);
+        }
+
+        // Filter by search (nama atau NIK)
+        if (!empty($search)) {
+            $hasilQuery->whereHas('karyawan', function ($query) use ($search) {
+                $query->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
+            });
+        }
+
+        $hasilRanking = $hasilQuery->orderedByRanking()->get();
 
         // Get info generate
         $latestHasil = HasilTopsis::byPeriode($bulan, $tahun)

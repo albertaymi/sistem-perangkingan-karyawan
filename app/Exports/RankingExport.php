@@ -29,13 +29,17 @@ class RankingExport implements
     protected $tahun;
     protected $periodeLabel;
     protected $idKaryawan; // Jika null = export semua, jika ada = export pribadi
+    protected $divisiFilter; // Filter divisi
+    protected $search; // Search keyword
 
-    public function __construct($bulan, $tahun, $periodeLabel, $idKaryawan = null)
+    public function __construct($bulan, $tahun, $periodeLabel, $idKaryawan = null, $divisiFilter = '', $search = '')
     {
         $this->bulan = $bulan;
         $this->tahun = $tahun;
         $this->periodeLabel = $periodeLabel;
         $this->idKaryawan = $idKaryawan;
+        $this->divisiFilter = $divisiFilter;
+        $this->search = $search;
     }
 
     /**
@@ -50,6 +54,19 @@ class RankingExport implements
         // Jika export pribadi, filter hanya karyawan tertentu
         if ($this->idKaryawan) {
             $query->where('id_karyawan', $this->idKaryawan);
+        }
+
+        // Filter by divisi_filter field
+        if (!empty($this->divisiFilter)) {
+            $query->where('divisi_filter', $this->divisiFilter);
+        }
+
+        // Filter by search (nama atau NIK)
+        if (!empty($this->search)) {
+            $query->whereHas('karyawan', function ($q) {
+                $q->where('nama', 'like', '%' . $this->search . '%')
+                    ->orWhere('nik', 'like', '%' . $this->search . '%');
+            });
         }
 
         return $query->get();
@@ -87,8 +104,8 @@ class RankingExport implements
             $hasil->karyawan->jabatan,
             number_format($hasil->skor_topsis, 6),
             number_format($hasil->skor_topsis * 100, 2) . '%',
-            number_format($hasil->d_positif, 6),
-            number_format($hasil->d_negatif, 6),
+            number_format($hasil->jarak_ideal_positif, 6),
+            number_format($hasil->jarak_ideal_negatif, 6),
             $hasil->tanggal_generate->format('d/m/Y H:i'),
         ];
     }
