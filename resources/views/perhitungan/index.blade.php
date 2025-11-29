@@ -16,7 +16,7 @@
         </div>
         <div class="p-6">
             <form method="GET" action="{{ route('perhitungan.index') }}" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {{-- Periode Dropdown --}}
                     <div>
                         <label for="bulan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -47,12 +47,34 @@
                         </select>
                     </div>
 
-                    {{-- Periode Terpilih Info --}}
+                    {{-- Filter Divisi --}}
+                    <div>
+                        <label for="divisi" class="block text-sm font-medium text-gray-700 mb-2">
+                            Divisi
+                        </label>
+                        <select name="divisi" id="divisi" onchange="this.form.submit()"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">Semua Divisi</option>
+                            @foreach ($divisiList as $divisiItem)
+                                <option value="{{ $divisiItem }}" {{ $divisiFilter == $divisiItem ? 'selected' : '' }}>
+                                    {{ $divisiItem }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Filter Terpilih Info --}}
                     <div class="flex items-end">
                         <div class="w-full p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p class="text-xs font-medium text-blue-800 mb-1">Periode Terpilih:</p>
+                            <p class="text-xs font-medium text-blue-800 mb-1">Filter Terpilih:</p>
                             <p class="text-sm font-bold text-blue-900">{{ $periodeLabel }}</p>
-                            <p class="text-xs text-blue-700 mt-1">Data akan dianalisis untuk menghasilkan ranking karyawan periode ini</p>
+                            <p class="text-xs text-blue-700 mt-1">
+                                @if(empty($divisiFilter))
+                                    Semua Divisi
+                                @else
+                                    Divisi: {{ $divisiFilter }}
+                                @endif
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -286,19 +308,32 @@
 
     {{-- Warning Message if data incomplete --}}
     @if (!$allDataComplete || !$bobotValid)
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div class="flex">
                 <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
                         </path>
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Perhatian: Data Tidak Lengkap</h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <p>Ada {{ $dataTidakLengkap }} karyawan dengan data penilaian yang belum lengkap. TOPSIS tetap dapat dijalankan, namun karyawan dengan data tidak lengkap akan dikecualikan dari perhitungan ranking.</p>
+                    <h3 class="text-sm font-medium text-red-800">Perhatian: Data Tidak Lengkap</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        @if (!$bobotValid)
+                            <p class="mb-2"><strong>Total bobot kriteria harus 100%</strong> untuk menjalankan TOPSIS. Saat ini: {{ number_format($kriteriaAktif->sum('bobot'), 2) }}%</p>
+                        @endif
+                        @if (!$allDataComplete)
+                            <p>
+                                <strong>TOPSIS tidak dapat dijalankan.</strong>
+                                Ada {{ $dataTidakLengkap }} karyawan
+                                @if(!empty($divisiFilter))
+                                    di divisi {{ $divisiFilter }}
+                                @endif
+                                dengan data penilaian yang belum lengkap.
+                                Semua karyawan harus memiliki penilaian lengkap untuk semua kriteria sebelum dapat menjalankan TOPSIS.
+                            </p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -501,6 +536,7 @@
                         @csrf
                         <input type="hidden" name="bulan" value="{{ $bulan }}">
                         <input type="hidden" name="tahun" value="{{ $tahun }}">
+                        <input type="hidden" name="divisi" value="{{ $divisiFilter }}">
                         <div class="mb-4 text-center">
                             <svg class="mx-auto mb-4 text-green-600 w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -510,10 +546,18 @@
                                 Generate ranking untuk periode:
                             </p>
                             <p class="text-base font-semibold text-gray-900 mb-3">{{ $periodeLabel }}</p>
+                            @if(!empty($divisiFilter))
+                                <p class="text-sm text-gray-600 mb-3">
+                                    Divisi: <span class="font-semibold text-gray-900">{{ $divisiFilter }}</span>
+                                </p>
+                            @endif
                             <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-left">
                                 <p class="text-xs font-semibold text-blue-800 mb-1">Informasi:</p>
                                 <p class="text-xs text-blue-700">
-                                    Sistem akan menghitung ranking menggunakan metode TOPSIS berdasarkan data penilaian yang sudah diinput untuk {{ $karyawanAktif }} karyawan.
+                                    Sistem akan menghitung ranking menggunakan metode TOPSIS berdasarkan data penilaian yang sudah diinput untuk {{ $karyawanAktif }} karyawan
+                                    @if(!empty($divisiFilter))
+                                        di divisi {{ $divisiFilter }}
+                                    @endif.
                                 </p>
                             </div>
                         </div>
@@ -555,6 +599,7 @@
                         @csrf
                         <input type="hidden" name="bulan" value="{{ $bulan }}">
                         <input type="hidden" name="tahun" value="{{ $tahun }}">
+                        <input type="hidden" name="divisi" value="{{ $divisiFilter }}">
                         <div class="mb-4 text-center">
                             <svg class="mx-auto mb-4 text-yellow-600 w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -565,10 +610,19 @@
                                 Hitung ulang ranking untuk periode:
                             </p>
                             <p class="text-base font-semibold text-gray-900 mb-3">{{ $periodeLabel }}</p>
+                            @if(!empty($divisiFilter))
+                                <p class="text-sm text-gray-600 mb-3">
+                                    Divisi: <span class="font-semibold text-gray-900">{{ $divisiFilter }}</span>
+                                </p>
+                            @endif
                             <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-left">
                                 <p class="text-xs font-semibold text-yellow-800 mb-1">Perhatian:</p>
                                 <p class="text-xs text-yellow-700">
-                                    Data ranking sebelumnya akan dihapus dan diganti dengan hasil perhitungan baru.
+                                    Data ranking sebelumnya
+                                    @if(!empty($divisiFilter))
+                                        untuk divisi {{ $divisiFilter }}
+                                    @endif
+                                    akan dihapus dan diganti dengan hasil perhitungan baru.
                                 </p>
                             </div>
                         </div>

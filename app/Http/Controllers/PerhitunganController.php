@@ -28,6 +28,9 @@ class PerhitunganController extends Controller
         $bulan = $request->query('bulan', date('n'));
         $tahun = $request->query('tahun', date('Y'));
 
+        // Get selected divisi filter (default to empty = semua divisi)
+        $divisiFilter = $request->query('divisi', '');
+
         // Get available years (5 years back + existing penilaian years)
         $tahunList = collect();
         $currentYear = (int) date('Y');
@@ -44,6 +47,14 @@ class PerhitunganController extends Controller
                 ->reverse();
         }
 
+        // Get list of divisi untuk dropdown filter
+        $divisiList = User::where('role', 'karyawan')
+            ->where('status_akun', 'aktif')
+            ->orderBy('divisi')
+            ->pluck('divisi')
+            ->unique()
+            ->values();
+
         // Build periode label
         $namaBulan = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
@@ -52,13 +63,29 @@ class PerhitunganController extends Controller
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
-        // Get all active karyawan
-        $karyawanAktif = User::where('role', 'karyawan')
-            ->where('status_akun', 'aktif')
-            ->count();
+        // Get all active karyawan (dengan filter divisi jika dipilih)
+        $karyawanAktifQuery = User::where('role', 'karyawan')
+            ->where('status_akun', 'aktif');
 
-        // Get karyawan with penilaian in this periode
+        if (!empty($divisiFilter)) {
+            $karyawanAktifQuery->where('divisi', $divisiFilter);
+        }
+
+        $karyawanAktif = $karyawanAktifQuery->count();
+
+        // Get IDs karyawan yang akan divalidasi (sesuai filter divisi)
+        $karyawanIdsToValidate = User::where('role', 'karyawan')
+            ->where('status_akun', 'aktif');
+
+        if (!empty($divisiFilter)) {
+            $karyawanIdsToValidate->where('divisi', $divisiFilter);
+        }
+
+        $karyawanIdsFiltered = $karyawanIdsToValidate->pluck('id');
+
+        // Get karyawan with penilaian in this periode (sesuai filter divisi)
         $karyawanDenganPenilaian = Penilaian::byPeriode($bulan, $tahun)
+            ->whereIn('id_karyawan', $karyawanIdsFiltered)
             ->distinct('id_karyawan')
             ->pluck('id_karyawan');
 
@@ -71,10 +98,10 @@ class PerhitunganController extends Controller
             ->orderBy('urutan')
             ->get();
 
-        // Calculate validation status per kriteria
+        // Calculate validation status per kriteria (dengan filter divisi)
         $validasiKriteria = [];
         foreach ($kriteriaAktif as $kriteria) {
-            $validation = $this->validateKriteriaCompletion($kriteria->id, $bulan, $tahun);
+            $validation = $this->validateKriteriaCompletion($kriteria->id, $bulan, $tahun, $divisiFilter);
             $validasiKriteria[] = [
                 'kriteria' => $kriteria,
                 'karyawan_lengkap' => $validation['complete_count'],
@@ -93,8 +120,19 @@ class PerhitunganController extends Controller
         $totalBobot = $kriteriaAktif->sum('bobot');
         $bobotValid = abs($totalBobot - 100) < 0.01; // Allow small floating point variance
 
-        // Check if ranking already exists
-        $hasilExists = HasilTopsis::byPeriode($bulan, $tahun)->exists();
+        // Check if ranking already exists (untuk semua karyawan sesuai filter divisi)
+        // Jika filter divisi, cek apakah SEMUA karyawan di divisi tersebut sudah punya hasil ranking
+        // Jika semua divisi, cek apakah SEMUA karyawan aktif sudah punya hasil ranking
+        $hasilExists = false;
+        if ($karyawanIdsFiltered->isNotEmpty()) {
+            $karyawanWithHasil = HasilTopsis::byPeriode($bulan, $tahun)
+                ->whereIn('id_karyawan', $karyawanIdsFiltered)
+                ->distinct('id_karyawan')
+                ->pluck('id_karyawan');
+
+            // Cek apakah semua karyawan sesuai filter sudah punya hasil
+            $hasilExists = $karyawanWithHasil->count() === $karyawanIdsFiltered->count();
+        }
 
         // Get history of TOPSIS generations
         $riwayatGenerate = HasilTopsis::select('bulan', 'tahun', 'periode_label', 'tanggal_generate',
@@ -113,6 +151,8 @@ class PerhitunganController extends Controller
             'bulan',
             'tahun',
             'tahunList',
+            'divisiFilter',
+            'divisiList',
             'periodeLabel',
             'karyawanAktif',
             'dataPenilaianLengkap',
@@ -132,9 +172,10 @@ class PerhitunganController extends Controller
      * @param int $kriteriaId
      * @param int $bulan
      * @param int $tahun
+     * @param string $divisiFilter Filter divisi (empty string = semua divisi)
      * @return array
      */
-    private function validateKriteriaCompletion($kriteriaId, $bulan, $tahun)
+    private function validateKriteriaCompletion($kriteriaId, $bulan, $tahun, $divisiFilter = '')
     {
         // Get the kriteria
         $kriteria = SistemKriteria::find($kriteriaId);
@@ -148,10 +189,15 @@ class PerhitunganController extends Controller
             ];
         }
 
-        // Get all active karyawan
-        $allKaryawan = User::where('role', 'karyawan')
-            ->where('status_akun', 'aktif')
-            ->get();
+        // Get all active karyawan (dengan filter divisi jika dipilih)
+        $karyawanQuery = User::where('role', 'karyawan')
+            ->where('status_akun', 'aktif');
+
+        if (!empty($divisiFilter)) {
+            $karyawanQuery->where('divisi', $divisiFilter);
+        }
+
+        $allKaryawan = $karyawanQuery->get();
 
         $totalKaryawan = $allKaryawan->count();
         $completeCount = 0;
@@ -335,23 +381,38 @@ class PerhitunganController extends Controller
         $request->validate([
             'bulan' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer|min:2020|max:2100',
+            'divisi' => 'nullable|string',
         ]);
 
         $bulan = $request->bulan;
         $tahun = $request->tahun;
+        $divisiFilter = $request->divisi ?? '';
 
         try {
             DB::beginTransaction();
 
-            // STEP 1: Get all karyawan yang punya penilaian di periode ini
+            // STEP 1: Get all karyawan yang punya penilaian di periode ini (dengan filter divisi)
+            // Ambil karyawan berdasarkan filter divisi
+            $karyawanQuery = User::where('role', 'karyawan')
+                ->where('status_akun', 'aktif');
+
+            if (!empty($divisiFilter)) {
+                $karyawanQuery->where('divisi', $divisiFilter);
+            }
+
+            $karyawanIdsFromFilter = $karyawanQuery->pluck('id');
+
+            // Filter penilaian hanya untuk karyawan sesuai filter divisi
             $karyawanIds = Penilaian::byPeriode($bulan, $tahun)
+                ->whereIn('id_karyawan', $karyawanIdsFromFilter)
                 ->distinct()
                 ->pluck('id_karyawan');
 
             if ($karyawanIds->isEmpty()) {
                 DB::rollBack();
-                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun])
-                    ->with('error', 'Tidak ada data penilaian untuk periode ini.');
+                $divisiLabel = !empty($divisiFilter) ? " divisi {$divisiFilter}" : '';
+                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun, 'divisi' => $divisiFilter])
+                    ->with('error', "Tidak ada data penilaian untuk periode ini{$divisiLabel}.");
             }
 
             // STEP 2: Get all active kriteria (level 1)
@@ -370,20 +431,16 @@ class PerhitunganController extends Controller
             $totalBobot = $kriteriaList->sum('bobot');
             if (abs($totalBobot - 100) >= 0.01) {
                 DB::rollBack();
-                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun])
+                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun, 'divisi' => $divisiFilter])
                     ->with('error', 'Total bobot kriteria harus 100%. Saat ini: ' . number_format($totalBobot, 2) . '%');
             }
 
-            // STEP 2.2: Validate all karyawan have complete penilaian for all kriteria
-            $allKaryawan = User::where('role', 'karyawan')
-                ->where('status_akun', 'aktif')
-                ->get();
-
+            // STEP 2.2: Validate all karyawan have complete penilaian for all kriteria (dengan filter divisi)
             $incompleteKaryawan = [];
             $incompleteKriteria = [];
 
             foreach ($kriteriaList as $kriteria) {
-                $validation = $this->validateKriteriaCompletion($kriteria->id, $bulan, $tahun);
+                $validation = $this->validateKriteriaCompletion($kriteria->id, $bulan, $tahun, $divisiFilter);
 
                 if (!$validation['is_complete']) {
                     $incompleteKriteria[] = $kriteria->nama_kriteria;
@@ -410,14 +467,15 @@ class PerhitunganController extends Controller
                     return $item['nama'] . ' (' . $item['nik'] . ')';
                 })->take(5)->implode(', ');
 
-                $errorMsg = 'TOPSIS tidak dapat dijalankan. Ada ' . count($incompleteKaryawan) . ' karyawan dengan data penilaian tidak lengkap';
+                $divisiLabel = !empty($divisiFilter) ? " divisi {$divisiFilter}" : '';
+                $errorMsg = "TOPSIS tidak dapat dijalankan{$divisiLabel}. Ada " . count($incompleteKaryawan) . ' karyawan dengan data penilaian tidak lengkap';
                 if (count($incompleteKaryawan) <= 5) {
                     $errorMsg .= ': ' . $karyawanList;
                 } else {
                     $errorMsg .= ' (menampilkan 5 dari ' . count($incompleteKaryawan) . '): ' . $karyawanList . ', dll.';
                 }
 
-                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun])
+                return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun, 'divisi' => $divisiFilter])
                     ->with('error', $errorMsg);
             }
 
@@ -504,7 +562,7 @@ class PerhitunganController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->route('perhitungan.index')
+            return redirect()->route('perhitungan.index', ['bulan' => $bulan, 'tahun' => $tahun, 'divisi' => $divisiFilter])
                 ->with('error', 'Gagal menghitung ranking: ' . $e->getMessage());
         }
     }
