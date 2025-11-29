@@ -23,6 +23,7 @@ class HasilTopsis extends Model
         'bulan',
         'tahun',
         'periode_label',
+        'divisi_filter',
         'skor_topsis',
         'ranking',
         'jarak_ideal_positif',
@@ -154,6 +155,14 @@ class HasilTopsis extends Model
     }
 
     /**
+     * Helper: Get divisi filter label
+     */
+    public function getDivisiFilterLabelAttribute()
+    {
+        return $this->divisi_filter ?? 'Semua Divisi';
+    }
+
+    /**
      * Scope: Filter by karyawan
      */
     public function scopeByKaryawan($query, $karyawanId)
@@ -183,6 +192,17 @@ class HasilTopsis extends Model
     public function scopeByTahun($query, $tahun)
     {
         return $query->where('tahun', $tahun);
+    }
+
+    /**
+     * Scope: Filter by divisi filter
+     */
+    public function scopeByDivisiFilter($query, $divisiFilter)
+    {
+        if (empty($divisiFilter)) {
+            return $query->whereNull('divisi_filter');
+        }
+        return $query->where('divisi_filter', $divisiFilter);
     }
 
     /**

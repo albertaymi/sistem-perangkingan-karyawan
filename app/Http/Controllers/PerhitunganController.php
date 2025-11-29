@@ -121,13 +121,21 @@ class PerhitunganController extends Controller
         $bobotValid = abs($totalBobot - 100) < 0.01; // Allow small floating point variance
 
         // Check if ranking already exists (untuk semua karyawan sesuai filter divisi)
-        // Jika filter divisi, cek apakah SEMUA karyawan di divisi tersebut sudah punya hasil ranking
-        // Jika semua divisi, cek apakah SEMUA karyawan aktif sudah punya hasil ranking
+        // Jika filter divisi, cek apakah SEMUA karyawan di divisi tersebut sudah punya hasil ranking dengan divisi_filter yang sama
+        // Jika semua divisi, cek apakah SEMUA karyawan aktif sudah punya hasil ranking dengan divisi_filter = NULL
         $hasilExists = false;
         if ($karyawanIdsFiltered->isNotEmpty()) {
-            $karyawanWithHasil = HasilTopsis::byPeriode($bulan, $tahun)
-                ->whereIn('id_karyawan', $karyawanIdsFiltered)
-                ->distinct('id_karyawan')
+            $hasilQuery = HasilTopsis::byPeriode($bulan, $tahun)
+                ->whereIn('id_karyawan', $karyawanIdsFiltered);
+
+            // Filter berdasarkan divisi_filter yang sama
+            if (empty($divisiFilter)) {
+                $hasilQuery->whereNull('divisi_filter');
+            } else {
+                $hasilQuery->where('divisi_filter', $divisiFilter);
+            }
+
+            $karyawanWithHasil = $hasilQuery->distinct('id_karyawan')
                 ->pluck('id_karyawan');
 
             // Cek apakah semua karyawan sesuai filter sudah punya hasil
@@ -135,15 +143,16 @@ class PerhitunganController extends Controller
         }
 
         // Get history of TOPSIS generations
-        $riwayatGenerate = HasilTopsis::select('bulan', 'tahun', 'periode_label', 'tanggal_generate',
+        $riwayatGenerate = HasilTopsis::select('bulan', 'tahun', 'periode_label', 'divisi_filter', 'tanggal_generate',
                                                'generated_by_super_admin_id', 'generated_by_hrd_id')
             ->distinct()
             ->with(['generatedBySuperAdmin', 'generatedByHRD'])
             ->orderByRaw('tahun DESC, bulan DESC')
+            ->orderBy('divisi_filter', 'asc')
             ->orderBy('tanggal_generate', 'desc')
             ->get()
             ->unique(function ($item) {
-                return $item->bulan . '-' . $item->tahun;
+                return $item->bulan . '-' . $item->tahun . '-' . ($item->divisi_filter ?? 'semua');
             })
             ->take(10);
 
@@ -513,8 +522,17 @@ class PerhitunganController extends Controller
                 $ranking++;
             }
 
-            // STEP 10: Save to database (delete existing and insert new)
-            HasilTopsis::byPeriode($bulan, $tahun)->forceDelete();
+            // STEP 10: Save to database (delete existing untuk divisi ini saja, insert new)
+            // Hapus hanya hasil ranking untuk periode + divisi filter yang sama
+            // Jika divisiFilter kosong (semua divisi), hapus yang divisi_filter = NULL
+            // Jika divisiFilter ada (divisi tertentu), hapus yang divisi_filter = divisi tersebut
+            $deleteQuery = HasilTopsis::byPeriode($bulan, $tahun);
+            if (empty($divisiFilter)) {
+                $deleteQuery->whereNull('divisi_filter');
+            } else {
+                $deleteQuery->where('divisi_filter', $divisiFilter);
+            }
+            $deleteQuery->forceDelete();
 
             $namaBulan = [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
@@ -540,6 +558,7 @@ class PerhitunganController extends Controller
                     'bulan' => $bulan,
                     'tahun' => $tahun,
                     'periode_label' => $periodeLabel,
+                    'divisi_filter' => !empty($divisiFilter) ? $divisiFilter : null,
                     'skor_topsis' => $result['skor_topsis'],
                     'ranking' => $result['ranking'],
                     'jarak_ideal_positif' => $result['jarak_ideal_positif'],

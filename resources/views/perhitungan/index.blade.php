@@ -464,6 +464,9 @@
                                 Periode
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Divisi
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tanggal Generate
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -480,6 +483,17 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $riwayat->periode_label }}</div>
                                     <div class="text-xs text-gray-500">{{ $riwayat->bulan }}/{{ $riwayat->tahun }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($riwayat->divisi_filter)
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            {{ $riwayat->divisi_filter }}
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            Semua Divisi
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">{{ $riwayat->tanggal_generate->format('d M Y') }}</div>

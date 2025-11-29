@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('bulan'); // 1-12
             $table->integer('tahun'); // 2024, 2025, dst
             $table->string('periode_label')->nullable(); // "Januari 2024"
+            $table->string('divisi_filter')->nullable(); // Filter divisi yang digunakan saat generate (NULL = semua divisi)
 
             // Hasil perhitungan TOPSIS
             $table->decimal('skor_topsis', 10, 6); // Skor preferensi (V)
@@ -43,8 +44,10 @@ return new class extends Migration
             $table->foreignId('generated_by_super_admin_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('generated_by_hrd_id')->nullable()->constrained('users')->cascadeOnDelete();
 
-            // Prevent duplicate (satu karyawan per periode hanya punya satu hasil)
-            $table->unique(['id_karyawan', 'bulan', 'tahun'], 'unique_hasil_topsis');
+            // Prevent duplicate (satu karyawan per periode per divisi filter hanya punya satu hasil)
+            // Kombinasi unik: karyawan + periode + divisi_filter
+            // NULL divisi_filter = semua divisi
+            $table->unique(['id_karyawan', 'bulan', 'tahun', 'divisi_filter'], 'unique_hasil_topsis');
 
             $table->timestamps();
             $table->softDeletes();
