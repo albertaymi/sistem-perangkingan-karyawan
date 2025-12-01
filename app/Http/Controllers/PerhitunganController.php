@@ -307,22 +307,23 @@ class PerhitunganController extends Controller
             })
             ->values();
 
-        if ($availablePeriods->isEmpty()) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Belum ada data ranking yang tersedia.');
-        }
-
         // Get filter parameters
         $bulan = $request->query('bulan');
         $tahun = $request->query('tahun');
         $divisiFilter = $request->query('divisi', '');
         $search = $request->query('search', '');
 
-        // If no periode selected, use latest
-        if (!$bulan || !$tahun) {
+        // If no periode selected and data exists, use latest
+        if ((!$bulan || !$tahun) && $availablePeriods->isNotEmpty()) {
             $latest = $availablePeriods->first();
             $bulan = $latest->bulan;
             $tahun = $latest->tahun;
+        }
+
+        // Set default to current month/year if still empty
+        if (!$bulan || !$tahun) {
+            $bulan = (int) date('n'); // Current month
+            $tahun = (int) date('Y'); // Current year
         }
 
         // Get list of available divisi_filter untuk periode ini

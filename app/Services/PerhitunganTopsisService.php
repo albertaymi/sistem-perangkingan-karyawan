@@ -203,10 +203,13 @@ class PerhitunganTopsisService
                     }
 
                     // Standardisasi untuk sub-kriteria ini
+                    // Gunakan tipe_kriteria dari sub-kriteria jika ada, kalau tidak ada gunakan dari parent
+                    $tipeKriteriaToUse = $sub->tipe_kriteria ?? $kriteria->tipe_kriteria;
+
                     $nilaiSubKriteria[$sub->id] = $this->standardisasiNilai(
                         $nilaiMentah,
                         $sub->tipe_input,
-                        $kriteria->tipe_kriteria, // Inherit tipe kriteria dari parent
+                        $tipeKriteriaToUse,
                         $sub->nilai_min,
                         $sub->nilai_max
                     );
