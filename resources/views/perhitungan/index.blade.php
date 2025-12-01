@@ -6,7 +6,8 @@
     {{-- Header Section --}}
     <div class="mb-6">
         <h2 class="text-3xl font-bold text-gray-900">Generate TOPSIS</h2>
-        <p class="mt-2 text-sm text-gray-600">Generate ranking karyawan menggunakan metode TOPSIS untuk periode yang dipilih</p>
+        <p class="mt-2 text-sm text-gray-600">Generate ranking karyawan menggunakan metode TOPSIS untuk periode yang dipilih
+        </p>
     </div>
 
     {{-- Pilih Periode Penilaian Section --}}
@@ -69,7 +70,7 @@
                             <p class="text-xs font-medium text-blue-800 mb-1">Filter Terpilih:</p>
                             <p class="text-sm font-bold text-blue-900">{{ $periodeLabel }}</p>
                             <p class="text-xs text-blue-700 mt-1">
-                                @if(empty($divisiFilter))
+                                @if (empty($divisiFilter))
                                     Semua Divisi
                                 @else
                                     Divisi: {{ $divisiFilter }}
@@ -100,7 +101,8 @@
                 </div>
             </div>
             <div class="mt-2">
-                <button type="button" onclick="showTooltip('tooltip-karyawan')" class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer">
+                <button type="button" onclick="showTooltip('tooltip-karyawan')"
+                    class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer">
                     Siap Dievaluasi
                 </button>
             </div>
@@ -122,7 +124,8 @@
             </div>
             <div class="mt-2">
                 <span class="text-xs text-gray-600">
-                    {{ $dataPenilaianLengkap > 0 ? number_format(($dataPenilaianLengkap / max($karyawanAktif, 1)) * 100, 1) : 0 }}% Complete
+                    {{ $dataPenilaianLengkap > 0 ? number_format(($dataPenilaianLengkap / max($karyawanAktif, 1)) * 100, 1) : 0 }}%
+                    Complete
                 </span>
             </div>
         </div>
@@ -131,19 +134,22 @@
         <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0 {{ $dataTidakLengkap > 0 ? 'bg-red-100' : 'bg-gray-100' }} rounded-lg p-3">
-                    <svg class="h-6 w-6 {{ $dataTidakLengkap > 0 ? 'text-red-600' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-6 w-6 {{ $dataTidakLengkap > 0 ? 'text-red-600' : 'text-gray-600' }}" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Data Tidak Lengkap</p>
-                    <p class="text-2xl font-bold {{ $dataTidakLengkap > 0 ? 'text-red-600' : 'text-gray-600' }}">{{ $dataTidakLengkap }}</p>
+                    <p class="text-2xl font-bold {{ $dataTidakLengkap > 0 ? 'text-red-600' : 'text-gray-600' }}">
+                        {{ $dataTidakLengkap }}</p>
                 </div>
             </div>
             <div class="mt-2">
                 <span class="text-xs {{ $dataTidakLengkap > 0 ? 'text-red-600' : 'text-gray-600' }}">
-                    {{ $dataTidakLengkap > 0 ? number_format(($dataTidakLengkap / max($karyawanAktif, 1)) * 100, 1) : 0 }}% Incomplete
+                    {{ $dataTidakLengkap > 0 ? number_format(($dataTidakLengkap / max($karyawanAktif, 1)) * 100, 1) : 0 }}%
+                    Incomplete
                 </span>
             </div>
         </div>
@@ -154,7 +160,8 @@
                 <div class="flex-shrink-0 bg-purple-100 rounded-lg p-3">
                     <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                        </path>
                     </svg>
                 </div>
                 <div class="ml-4">
@@ -182,12 +189,15 @@
         <div class="p-6">
             @if ($kriteriaAktif->isEmpty())
                 <div class="text-center py-12">
-                    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                        </path>
                     </svg>
                     <h3 class="mt-4 text-lg font-medium text-gray-900">Tidak Ada Kriteria Aktif</h3>
-                    <p class="mt-2 text-sm text-gray-500">Silakan aktifkan kriteria terlebih dahulu di menu Kelola Kriteria.</p>
+                    <p class="mt-2 text-sm text-gray-500">Silakan aktifkan kriteria terlebih dahulu di menu Kelola
+                        Kriteria.</p>
                     <div class="mt-6">
                         <a href="{{ route('kriteria.index') }}"
                             class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 cursor-pointer">
@@ -195,7 +205,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
                                 </path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
                             Kelola Kriteria
                         </a>
@@ -208,7 +219,8 @@
                             $subKriteriaCount = $item['kriteria']->subKriteria()->where('is_active', true)->count();
                             $isSingleKriteria = !empty($item['kriteria']->tipe_input);
                         @endphp
-                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow duration-200">
+                        <div
+                            class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow duration-200">
                             <div class="flex items-center space-x-4 flex-1">
                                 @if ($item['is_complete'])
                                     <div class="flex-shrink-0">
@@ -230,9 +242,11 @@
 
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
-                                        <h4 class="text-sm font-semibold text-gray-900">{{ $item['kriteria']->nama_kriteria }}</h4>
+                                        <h4 class="text-sm font-semibold text-gray-900">
+                                            {{ $item['kriteria']->nama_kriteria }}</h4>
                                         @if ($isSingleKriteria)
-                                            <span class="px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
+                                            <span
+                                                class="px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
                                                 Kriteria Tunggal
                                             </span>
                                         @endif
@@ -249,11 +263,13 @@
 
                                 <div class="text-right">
                                     @if ($item['is_complete'])
-                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <span
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                             {{ $item['karyawan_lengkap'] }}/{{ $item['total_karyawan'] }} Complete
                                         </span>
                                     @else
-                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        <span
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                             {{ $item['karyawan_lengkap'] }}/{{ $item['total_karyawan'] }} Complete
                                         </span>
                                     @endif
@@ -263,7 +279,8 @@
                     @endforeach
 
                     {{-- Bobot Kriteria Validation --}}
-                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg {{ $bobotValid ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
+                    <div
+                        class="flex items-center justify-between p-4 border border-gray-200 rounded-lg {{ $bobotValid ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
                         <div class="flex items-center space-x-4">
                             @if ($bobotValid)
                                 <div class="flex-shrink-0">
@@ -274,8 +291,10 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h4 class="text-sm font-semibold text-green-900">Bobot Kriteria - Total bobot kriteria = 100%</h4>
-                                    <p class="text-xs text-green-700 mt-1">Total: {{ number_format($kriteriaAktif->sum('bobot'), 2) }}%</p>
+                                    <h4 class="text-sm font-semibold text-green-900">Bobot Kriteria - Total bobot kriteria
+                                        = 100%</h4>
+                                    <p class="text-xs text-green-700 mt-1">Total:
+                                        {{ number_format($kriteriaAktif->sum('bobot'), 2) }}%</p>
                                 </div>
                             @else
                                 <div class="flex-shrink-0">
@@ -286,17 +305,21 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h4 class="text-sm font-semibold text-red-900">Bobot Kriteria - Total bobot harus 100%</h4>
-                                    <p class="text-xs text-red-700 mt-1">Total saat ini: {{ number_format($kriteriaAktif->sum('bobot'), 2) }}%</p>
+                                    <h4 class="text-sm font-semibold text-red-900">Bobot Kriteria - Total bobot harus 100%
+                                    </h4>
+                                    <p class="text-xs text-red-700 mt-1">Total saat ini:
+                                        {{ number_format($kriteriaAktif->sum('bobot'), 2) }}%</p>
                                 </div>
                             @endif
                         </div>
                         @if ($bobotValid)
-                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            <span
+                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                 Valid
                             </span>
                         @else
-                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            <span
+                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                 Invalid
                             </span>
                         @endif
@@ -321,17 +344,19 @@
                     <h3 class="text-sm font-medium text-red-800">Perhatian: Data Tidak Lengkap</h3>
                     <div class="mt-2 text-sm text-red-700">
                         @if (!$bobotValid)
-                            <p class="mb-2"><strong>Total bobot kriteria harus 100%</strong> untuk menjalankan TOPSIS. Saat ini: {{ number_format($kriteriaAktif->sum('bobot'), 2) }}%</p>
+                            <p class="mb-2"><strong>Total bobot kriteria harus 100%</strong> untuk menjalankan TOPSIS.
+                                Saat ini: {{ number_format($kriteriaAktif->sum('bobot'), 2) }}%</p>
                         @endif
                         @if (!$allDataComplete)
                             <p>
                                 <strong>TOPSIS tidak dapat dijalankan.</strong>
                                 Ada {{ $dataTidakLengkap }} karyawan
-                                @if(!empty($divisiFilter))
+                                @if (!empty($divisiFilter))
                                     di divisi {{ $divisiFilter }}
                                 @endif
                                 dengan data penilaian yang belum lengkap.
-                                Semua karyawan harus memiliki penilaian lengkap untuk semua kriteria sebelum dapat menjalankan TOPSIS.
+                                Semua karyawan harus memiliki penilaian lengkap untuk semua kriteria sebelum dapat
+                                menjalankan TOPSIS.
                             </p>
                         @endif
                     </div>
@@ -346,7 +371,8 @@
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900">Generate Ranking TOPSIS</h3>
                 @if ($hasilExists)
-                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    <span
+                        class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -359,21 +385,24 @@
         </div>
         <div class="p-6">
             <div class="text-center">
-                <svg class="mx-auto h-12 w-12 {{ $allDataComplete && $bobotValid ? 'text-green-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="mx-auto h-12 w-12 {{ $allDataComplete && $bobotValid ? 'text-green-600' : 'text-gray-400' }}"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                     </path>
                 </svg>
                 <h3 class="mt-4 text-lg font-medium text-gray-900">Generate Ranking TOPSIS</h3>
                 <p class="mt-2 text-sm text-gray-500 max-w-2xl mx-auto">
-                    Sistem akan menganalisis semua data penilaian menggunakan algoritma TOPSIS untuk menghasilkan ranking objektif karyawan.
-                    Proses ini akan menghitung jarak terhadap solusi ideal positif dan negatif untuk setiap alternatif karyawan.
+                    Sistem akan menganalisis semua data penilaian menggunakan algoritma TOPSIS untuk menghasilkan ranking
+                    objektif karyawan.
+                    Proses ini akan menghitung jarak terhadap solusi ideal positif dan negatif untuk setiap alternatif
+                    karyawan.
                 </p>
 
                 @if ($allDataComplete && $bobotValid)
                     <div class="mt-6 flex justify-center gap-3">
                         @if ($hasilExists)
-                            <a href="{{ route('ranking.index', ['bulan' => $bulan, 'tahun' => $tahun]) }}"
+                            <a href="{{ route('ranking.index', ['bulan' => $bulan, 'tahun' => $tahun, 'divisi' => $divisiFilter]) }}"
                                 class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 shadow-sm cursor-pointer">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -384,7 +413,8 @@
                                 </svg>
                                 Lihat Hasil
                             </a>
-                            <button type="button" data-modal-target="modal-recalculate" data-modal-toggle="modal-recalculate"
+                            <button type="button" data-modal-target="modal-recalculate"
+                                data-modal-toggle="modal-recalculate"
                                 class="inline-flex items-center px-6 py-3 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-150 cursor-pointer">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -428,7 +458,8 @@
                 <div class="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg text-left max-w-2xl mx-auto">
                     <p class="text-xs font-semibold text-blue-800 mb-1">Catatan:</p>
                     <p class="text-xs text-blue-700">
-                        Proses generate akan menggantikan hasil TOPSIS periode yang sama jika sudah ada. Pastikan semua data penilaian sudah benar sebelum menjalankan algoritma.
+                        Proses generate akan menggantikan hasil TOPSIS periode yang sama jika sudah ada. Pastikan semua data
+                        penilaian sudah benar sebelum menjalankan algoritma.
                     </p>
                 </div>
             </div>
@@ -449,30 +480,37 @@
         <div class="overflow-x-auto">
             @if ($riwayatGenerate->isEmpty())
                 <div class="text-center py-12">
-                    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     <h3 class="mt-4 text-lg font-medium text-gray-900">Belum Ada Riwayat</h3>
-                    <p class="mt-2 text-sm text-gray-500">Hasil generate TOPSIS akan muncul di sini setelah Anda menjalankan algoritma.</p>
+                    <p class="mt-2 text-sm text-gray-500">Hasil generate TOPSIS akan muncul di sini setelah Anda
+                        menjalankan algoritma.</p>
                 </div>
             @else
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Periode
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Divisi
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tanggal Generate
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Generated By
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Aksi
                             </th>
                         </tr>
@@ -485,19 +523,23 @@
                                     <div class="text-xs text-gray-500">{{ $riwayat->bulan }}/{{ $riwayat->tahun }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($riwayat->divisi_filter)
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    @if ($riwayat->divisi_filter)
+                                        <span
+                                            class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                             {{ $riwayat->divisi_filter }}
                                         </span>
                                     @else
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <span
+                                            class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                             Semua Divisi
                                         </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $riwayat->tanggal_generate->format('d M Y') }}</div>
-                                    <div class="text-xs text-gray-500">{{ $riwayat->tanggal_generate->format('H:i') }}</div>
+                                    <div class="text-sm text-gray-900">{{ $riwayat->tanggal_generate->format('d M Y') }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">{{ $riwayat->tanggal_generate->format('H:i') }}
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
@@ -510,7 +552,8 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                     <a href="{{ route('ranking.index', ['bulan' => $riwayat->bulan, 'tahun' => $riwayat->tahun, 'divisi' => $riwayat->divisi_filter]) }}"
                                         class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded hover:bg-blue-200 transition-colors duration-150 cursor-pointer">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -541,8 +584,10 @@
                         <button type="button"
                             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center cursor-pointer"
                             data-modal-toggle="modal-generate">
-                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                             </svg>
                         </button>
                     </div>
@@ -552,7 +597,8 @@
                         <input type="hidden" name="tahun" value="{{ $tahun }}">
                         <input type="hidden" name="divisi" value="{{ $divisiFilter }}">
                         <div class="mb-4 text-center">
-                            <svg class="mx-auto mb-4 text-green-600 w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="mx-auto mb-4 text-green-600 w-12 h-12" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
@@ -560,7 +606,7 @@
                                 Generate ranking untuk periode:
                             </p>
                             <p class="text-base font-semibold text-gray-900 mb-3">{{ $periodeLabel }}</p>
-                            @if(!empty($divisiFilter))
+                            @if (!empty($divisiFilter))
                                 <p class="text-sm text-gray-600 mb-3">
                                     Divisi: <span class="font-semibold text-gray-900">{{ $divisiFilter }}</span>
                                 </p>
@@ -568,8 +614,9 @@
                             <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-left">
                                 <p class="text-xs font-semibold text-blue-800 mb-1">Informasi:</p>
                                 <p class="text-xs text-blue-700">
-                                    Sistem akan menghitung ranking menggunakan metode TOPSIS berdasarkan data penilaian yang sudah diinput untuk {{ $karyawanAktif }} karyawan
-                                    @if(!empty($divisiFilter))
+                                    Sistem akan menghitung ranking menggunakan metode TOPSIS berdasarkan data penilaian yang
+                                    sudah diinput untuk {{ $karyawanAktif }} karyawan
+                                    @if (!empty($divisiFilter))
                                         di divisi {{ $divisiFilter }}
                                     @endif.
                                 </p>
@@ -604,8 +651,10 @@
                         <button type="button"
                             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center cursor-pointer"
                             data-modal-toggle="modal-recalculate">
-                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                             </svg>
                         </button>
                     </div>
@@ -615,7 +664,8 @@
                         <input type="hidden" name="tahun" value="{{ $tahun }}">
                         <input type="hidden" name="divisi" value="{{ $divisiFilter }}">
                         <div class="mb-4 text-center">
-                            <svg class="mx-auto mb-4 text-yellow-600 w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="mx-auto mb-4 text-yellow-600 w-12 h-12" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
                                 </path>
@@ -624,7 +674,7 @@
                                 Hitung ulang ranking untuk periode:
                             </p>
                             <p class="text-base font-semibold text-gray-900 mb-3">{{ $periodeLabel }}</p>
-                            @if(!empty($divisiFilter))
+                            @if (!empty($divisiFilter))
                                 <p class="text-sm text-gray-600 mb-3">
                                     Divisi: <span class="font-semibold text-gray-900">{{ $divisiFilter }}</span>
                                 </p>
@@ -633,7 +683,7 @@
                                 <p class="text-xs font-semibold text-yellow-800 mb-1">Perhatian:</p>
                                 <p class="text-xs text-yellow-700">
                                     Data ranking sebelumnya
-                                    @if(!empty($divisiFilter))
+                                    @if (!empty($divisiFilter))
                                         untuk divisi {{ $divisiFilter }}
                                     @endif
                                     akan dihapus dan diganti dengan hasil perhitungan baru.
