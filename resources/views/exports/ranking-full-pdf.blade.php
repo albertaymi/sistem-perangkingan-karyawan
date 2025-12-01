@@ -302,8 +302,8 @@
                     <td>{{ $hasil->karyawan->divisi }}</td>
                     <td>{{ $hasil->karyawan->jabatan }}</td>
                     <td class="text-center">{{ number_format($hasil->skor_topsis, 4) }}</td>
-                    <td class="text-center">{{ number_format($hasil->d_positif, 4) }}</td>
-                    <td class="text-center">{{ number_format($hasil->d_negatif, 4) }}</td>
+                    <td class="text-center">{{ number_format($hasil->jarak_ideal_positif, 4) }}</td>
+                    <td class="text-center">{{ number_format($hasil->jarak_ideal_negatif, 4) }}</td>
                 </tr>
             @endforeach
         </tbody>

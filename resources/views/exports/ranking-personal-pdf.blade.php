@@ -251,11 +251,11 @@
     <div class="grid-2">
         <div class="metric-card">
             <div class="metric-label">D+ (Jarak ke Solusi Ideal Positif)</div>
-            <div class="metric-value">{{ number_format($hasil->d_positif, 6) }}</div>
+            <div class="metric-value">{{ number_format($hasil->jarak_ideal_positif, 6) }}</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">D- (Jarak ke Solusi Ideal Negatif)</div>
-            <div class="metric-value">{{ number_format($hasil->d_negatif, 6) }}</div>
+            <div class="metric-value">{{ number_format($hasil->jarak_ideal_negatif, 6) }}</div>
         </div>
     </div>
 
@@ -354,8 +354,8 @@
     <div class="formula-box">
         <strong>Formula:</strong> V = D- / (D+ + D-)<br><br>
         <strong>Perhitungan:</strong><br>
-        V = {{ number_format($hasil->d_negatif, 6) }} / ({{ number_format($hasil->d_positif, 6) }} + {{ number_format($hasil->d_negatif, 6) }})<br>
-        V = {{ number_format($hasil->d_negatif, 6) }} / {{ number_format($hasil->d_positif + $hasil->d_negatif, 6) }}<br>
+        V = {{ number_format($hasil->jarak_ideal_negatif, 6) }} / ({{ number_format($hasil->jarak_ideal_positif, 6) }} + {{ number_format($hasil->jarak_ideal_negatif, 6) }})<br>
+        V = {{ number_format($hasil->jarak_ideal_negatif, 6) }} / {{ number_format($hasil->jarak_ideal_positif + $hasil->jarak_ideal_negatif, 6) }}<br>
         V = <span class="highlight">{{ number_format($hasil->skor_topsis, 6) }}</span>
     </div>
 
