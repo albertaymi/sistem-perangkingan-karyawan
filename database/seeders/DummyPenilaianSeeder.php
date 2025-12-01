@@ -297,7 +297,7 @@ class DummyPenilaianSeeder extends Seeder
             Penilaian::create([
                 'id_karyawan' => $idKaryawan,
                 'id_kriteria' => $kriteria->id,
-                'id_sub_kriteria' => $dropdownOption->id,
+                'id_sub_kriteria' => $subKriteria->id, // ID dari Status MCU (level 2), bukan dropdown option (level 3)
                 'bulan' => $bulan,
                 'tahun' => $tahun,
                 'nilai' => $dropdownOption->nilai_tetap,
