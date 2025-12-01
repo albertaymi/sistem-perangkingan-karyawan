@@ -474,10 +474,64 @@ class PerhitunganController extends Controller
         ];
         $periodeLabel = $namaBulan[$hasil->bulan] . ' ' . $hasil->tahun;
 
+        // Get kriteria with sub-kriteria and penilaian data
+        $kriteriaList = SistemKriteria::where('level', 1)
+            ->where('is_active', true)
+            ->with(['subKriteria' => function ($query) {
+                $query->where('is_active', true)->orderBy('urutan');
+            }])
+            ->orderBy('urutan')
+            ->get();
+
+        // Get all penilaian for this karyawan in this periode
+        $penilaianData = Penilaian::where('id_karyawan', $hasil->id_karyawan)
+            ->where('bulan', $hasil->bulan)
+            ->where('tahun', $hasil->tahun)
+            ->with(['kriteria', 'subKriteria'])
+            ->get();
+
+        // Organize penilaian by kriteria
+        $penilaianByKriteria = [];
+        foreach ($penilaianData as $penilaian) {
+            $kriteriaId = $penilaian->id_kriteria;
+            $subKriteriaId = $penilaian->id_sub_kriteria;
+
+            if (!isset($penilaianByKriteria[$kriteriaId])) {
+                $penilaianByKriteria[$kriteriaId] = [
+                    'items' => [],
+                    'catatan' => $penilaian->catatan,
+                    'total' => 0,
+                ];
+            }
+
+            if ($subKriteriaId) {
+                // Multi sub-kriteria
+                $penilaianByKriteria[$kriteriaId]['items'][$subKriteriaId] = $penilaian;
+            } else {
+                // Single kriteria
+                $penilaianByKriteria[$kriteriaId]['items']['single'] = $penilaian;
+            }
+        }
+
+        // Calculate total per kriteria
+        foreach ($penilaianByKriteria as $kriteriaId => $data) {
+            $total = 0;
+            $count = 0;
+            foreach ($data['items'] as $item) {
+                if ($item && is_object($item)) {
+                    $total += $item->nilai;
+                    $count++;
+                }
+            }
+            $penilaianByKriteria[$kriteriaId]['total'] = $count > 0 ? $total / $count : 0;
+        }
+
         return view('perhitungan.detail', compact(
             'hasil',
             'allHasil',
-            'periodeLabel'
+            'periodeLabel',
+            'kriteriaList',
+            'penilaianByKriteria'
         ));
     }
 
