@@ -324,9 +324,13 @@ class PerhitunganController extends Controller
         $hasilQuery = HasilTopsis::byPeriode($bulan, $tahun)
             ->with('karyawan');
 
-        // Filter by divisi_filter field (NULL = Semua Divisi)
+        // Filter by divisi_filter field
+        // Jika divisiFilter kosong (Semua Divisi) = hanya tampilkan yang divisi_filter = NULL
+        // Jika divisiFilter ada (divisi tertentu) = tampilkan yang divisi_filter = divisi tersebut
         if (!empty($divisiFilter)) {
             $hasilQuery->where('divisi_filter', $divisiFilter);
+        } else {
+            $hasilQuery->whereNull('divisi_filter');
         }
 
         // Filter by search (nama atau NIK)
