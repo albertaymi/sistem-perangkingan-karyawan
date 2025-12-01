@@ -8,7 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     * Jalankan semua seeder untuk data awal sistem
+     * Jalankan semua seeder untuk data awal sistem sesuai skripsi
      */
     public function run(): void
     {
@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             KriteriaSeeder::class,
             DummyUserSeeder::class,
+            DummyPenilaianSeeder::class,
         ]);
     }
 }
