@@ -495,10 +495,17 @@ class PerhitunganController extends Controller
             }
         }
 
-        // Get all hasil for this periode for comparison
-        $allHasil = HasilTopsis::byPeriode($hasil->bulan, $hasil->tahun)
-            ->orderedByRanking()
-            ->get();
+        // Get all hasil for this periode for comparison (with same divisi_filter)
+        $allHasilQuery = HasilTopsis::byPeriode($hasil->bulan, $hasil->tahun);
+
+        // Filter by same divisi_filter as current hasil
+        if ($hasil->divisi_filter) {
+            $allHasilQuery->where('divisi_filter', $hasil->divisi_filter);
+        } else {
+            $allHasilQuery->whereNull('divisi_filter');
+        }
+
+        $allHasil = $allHasilQuery->orderedByRanking()->get();
 
         // Get periode label
         $namaBulan = [
@@ -556,17 +563,15 @@ class PerhitunganController extends Controller
             }
         }
 
-        // Calculate total per kriteria
+        // Calculate total per kriteria (sum of all sub-kriteria values)
         foreach ($penilaianByKriteria as $kriteriaId => $data) {
             $total = 0;
-            $count = 0;
             foreach ($data['items'] as $item) {
                 if ($item && is_object($item)) {
                     $total += $item->nilai;
-                    $count++;
                 }
             }
-            $penilaianByKriteria[$kriteriaId]['total'] = $count > 0 ? $total / $count : 0;
+            $penilaianByKriteria[$kriteriaId]['total'] = $total;
         }
 
         return view('perhitungan.detail', compact(
