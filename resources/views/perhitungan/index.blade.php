@@ -373,7 +373,7 @@
                 @if ($allDataComplete && $bobotValid)
                     <div class="mt-6 flex justify-center gap-3">
                         @if ($hasilExists)
-                            <a href="{{ route('perhitungan.show', [$bulan, $tahun]) }}"
+                            <a href="{{ route('ranking.index', ['bulan' => $bulan, 'tahun' => $tahun]) }}"
                                 class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 shadow-sm cursor-pointer">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -508,7 +508,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                    <a href="{{ route('perhitungan.show', [$riwayat->bulan, $riwayat->tahun]) }}"
+                                    <a href="{{ route('ranking.index', ['bulan' => $riwayat->bulan, 'tahun' => $riwayat->tahun, 'divisi' => $riwayat->divisi_filter]) }}"
                                         class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded hover:bg-blue-200 transition-colors duration-150 cursor-pointer">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

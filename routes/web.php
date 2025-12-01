@@ -85,8 +85,6 @@ Route::middleware(['auth', 'role:super_admin,hrd,supervisor'])->prefix('penilaia
 Route::middleware(['auth', 'role:super_admin,hrd'])->prefix('perhitungan')->name('perhitungan.')->group(function () {
     Route::get('/', [PerhitunganController::class, 'index'])->name('index');
     Route::post('/calculate', [PerhitunganController::class, 'calculate'])->name('calculate');
-    Route::get('/detail/{id}', [PerhitunganController::class, 'detail'])->name('detail');
-    Route::get('/{bulan}/{tahun}', [PerhitunganController::class, 'show'])->name('show');
 });
 
 // Hasil Perangkingan Routes (Semua role yang login & approved dapat melihat)

@@ -57,9 +57,18 @@ class PerhitunganController extends Controller
 
         // Build periode label
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -143,8 +152,15 @@ class PerhitunganController extends Controller
         }
 
         // Get history of TOPSIS generations
-        $riwayatGenerate = HasilTopsis::select('bulan', 'tahun', 'periode_label', 'divisi_filter', 'tanggal_generate',
-                                               'generated_by_super_admin_id', 'generated_by_hrd_id')
+        $riwayatGenerate = HasilTopsis::select(
+            'bulan',
+            'tahun',
+            'periode_label',
+            'divisi_filter',
+            'tanggal_generate',
+            'generated_by_super_admin_id',
+            'generated_by_hrd_id'
+        )
             ->distinct()
             ->with(['generatedBySuperAdmin', 'generatedByHRD'])
             ->orderByRaw('tahun DESC, bulan DESC')
@@ -363,9 +379,18 @@ class PerhitunganController extends Controller
 
         // Get periode label
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -418,9 +443,18 @@ class PerhitunganController extends Controller
 
         // Get periode label
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -468,9 +502,18 @@ class PerhitunganController extends Controller
 
         // Get periode label
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$hasil->bulan] . ' ' . $hasil->tahun;
 
@@ -689,9 +732,18 @@ class PerhitunganController extends Controller
             $deleteQuery->forceDelete();
 
             $namaBulan = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
             $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
             $tanggalGenerate = Carbon::now();
@@ -729,9 +781,8 @@ class PerhitunganController extends Controller
 
             DB::commit();
 
-            return redirect()->route('perhitungan.show', [$bulan, $tahun])
+            return redirect()->route('ranking.index', ['bulan' => $bulan, 'tahun' => $tahun])
                 ->with('success', "Berhasil menghitung ranking untuk {$insertedCount} karyawan pada periode {$periodeLabel}");
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -761,9 +812,18 @@ class PerhitunganController extends Controller
     {
         // Get periode label
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
@@ -810,9 +870,18 @@ class PerhitunganController extends Controller
     {
         // Get periode label
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         $periodeLabel = $namaBulan[$bulan] . ' ' . $tahun;
 
