@@ -8,6 +8,7 @@ use App\Http\Controllers\SubKriteriaController;
 use App\Http\Controllers\DropdownOptionController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\PerhitunganController;
+use App\Http\Controllers\DashboardController;
 
 // Redirect root ke login
 Route::get('/', fn() => redirect()->route('login'));
@@ -27,7 +28,7 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Dashboard (Protected - semua role yang login & approved)
-Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard')->middleware('auth');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 
 // User Management Routes (Super Admin & HRD only)
 Route::middleware(['auth', 'role:super_admin,hrd'])->prefix('users')->name('users.')->group(function () {
