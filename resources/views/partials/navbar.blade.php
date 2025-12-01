@@ -28,7 +28,7 @@
                 </a>
             </div>
             <div class="flex items-center">
-                <div class="flex items-center ms-3">
+                <div class="flex items-center ms-3 relative">
                     <div>
                         <button type="button"
                             class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 cursor-pointer"
@@ -40,8 +40,8 @@
                             </div>
                         </button>
                     </div>
-                    <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow"
-                        id="dropdown-user">
+                    <div class="z-50 hidden absolute right-0 mt-2 w-48 text-base list-none bg-white divide-y divide-gray-100 rounded shadow"
+                        id="dropdown-user" style="top: 100%;">
                         <div class="px-4 py-3" role="none">
                             <p class="text-sm text-gray-900" role="none">
                                 {{ auth()->user()->nama }}
@@ -65,7 +65,8 @@
                                     role="menuitem">Dashboard</a>
                             </li>
                             <li>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                                <a href="{{ route('profile.edit') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                                     role="menuitem">Pengaturan Akun</a>
                             </li>
                             <li>
