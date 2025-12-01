@@ -239,20 +239,20 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                            <td class="px-6 py-4 text-center text-sm font-medium">
+                                <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
                                     {{-- Button Kelola Sub-Kriteria --}}
                                     <a href="{{ route('kriteria.detail', $item->id) }}"
-                                        class="inline-flex items-center px-3 py-1.5 {{ $item->tipe_input ? 'bg-gray-400' : 'bg-purple-600 hover:bg-purple-700' }} text-white text-xs font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-150 cursor-pointer"
+                                        class="inline-flex items-center px-2.5 py-1.5 {{ $item->tipe_input ? 'bg-gray-400' : 'bg-purple-600 hover:bg-purple-700' }} text-white text-xs font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-150 cursor-pointer"
                                         @if ($item->tipe_input) title="Kriteria ini memiliki tipe input ({{ $item->tipe_input }}). Sub-kriteria tidak dapat ditambahkan." @endif>
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
                                         </svg>
-                                        Sub-Kriteria
+                                        Sub
                                         @if ($item->tipe_input)
-                                            <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <svg class="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd"
                                                     d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
                                                     clip-rule="evenodd"></path>
@@ -262,8 +262,8 @@
 
                                     {{-- Button Edit --}}
                                     <button type="button" onclick="editKriteria({{ $item->id }})"
-                                        class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 cursor-pointer">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                        class="inline-flex items-center px-2.5 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 cursor-pointer">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
@@ -277,21 +277,21 @@
                                         class="inline-block">
                                         @csrf
                                         <button type="submit"
-                                            class="inline-flex items-center px-3 py-1.5 {{ $item->is_active ? 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500' }} text-white text-xs font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-150 cursor-pointer">
+                                            class="inline-flex items-center px-2.5 py-1.5 {{ $item->is_active ? 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500' }} text-white text-xs font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-150 cursor-pointer">
                                             @if ($item->is_active)
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
-                                                Nonaktifkan
+                                                Nonaktif
                                             @else
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M5 13l4 4L19 7"></path>
                                                 </svg>
-                                                Aktifkan
+                                                Aktif
                                             @endif
                                         </button>
                                     </form>
@@ -299,8 +299,8 @@
                                     {{-- Button Hapus --}}
                                     <button type="button"
                                         onclick="confirmDelete({{ $item->id }}, '{{ $item->nama_kriteria }}')"
-                                        class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-150 cursor-pointer">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                        class="inline-flex items-center px-2.5 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-150 cursor-pointer">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
