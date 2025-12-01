@@ -858,6 +858,8 @@ class PerhitunganController extends Controller
         $fileName = 'Ranking_' . $periodeLabel;
         if (!empty($divisiFilter)) {
             $fileName .= '_' . $divisiFilter;
+        } else {
+            $fileName .= '_Semua_Divisi';
         }
         if ($idKaryawan) {
             $fileName .= '_' . auth()->user()->nama;
@@ -925,9 +927,11 @@ class PerhitunganController extends Controller
             ->byPeriode($bulan, $tahun)
             ->where('id_karyawan', auth()->id());
 
-        // Filter by divisi_filter if provided
+        // Filter by divisi_filter - sama seperti di rankingIndex
         if (!empty($divisiFilter)) {
             $hasilQuery->where('divisi_filter', $divisiFilter);
+        } else {
+            $hasilQuery->whereNull('divisi_filter');
         }
 
         $hasil = $hasilQuery->first();
@@ -985,9 +989,11 @@ class PerhitunganController extends Controller
         $hasilQuery = HasilTopsis::with('karyawan')
             ->byPeriode($bulan, $tahun);
 
-        // Filter by divisi_filter
+        // Filter by divisi_filter - sama seperti di rankingIndex
         if (!empty($divisiFilter)) {
             $hasilQuery->where('divisi_filter', $divisiFilter);
+        } else {
+            $hasilQuery->whereNull('divisi_filter');
         }
 
         // Filter by search (nama atau NIK)

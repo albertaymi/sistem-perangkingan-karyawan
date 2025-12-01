@@ -56,9 +56,11 @@ class RankingExport implements
             $query->where('id_karyawan', $this->idKaryawan);
         }
 
-        // Filter by divisi_filter field
+        // Filter by divisi_filter field - sama seperti di rankingIndex
         if (!empty($this->divisiFilter)) {
             $query->where('divisi_filter', $this->divisiFilter);
+        } else {
+            $query->whereNull('divisi_filter');
         }
 
         // Filter by search (nama atau NIK)
@@ -150,7 +152,7 @@ class RankingExport implements
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
                 $highestColumn = $sheet->getHighestColumn();
