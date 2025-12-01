@@ -781,7 +781,18 @@ class PerhitunganController extends Controller
 
             DB::commit();
 
-            return redirect()->route('ranking.index', ['bulan' => $bulan, 'tahun' => $tahun])
+            // Redirect ke ranking.index dengan filter periode dan divisi
+            $redirectParams = [
+                'bulan' => $bulan,
+                'tahun' => $tahun
+            ];
+
+            // Tambahkan divisi filter jika ada
+            if (!empty($divisiFilter)) {
+                $redirectParams['divisi'] = $divisiFilter;
+            }
+
+            return redirect()->route('ranking.index', $redirectParams)
                 ->with('success', "Berhasil menghitung ranking untuk {$insertedCount} karyawan pada periode {$periodeLabel}");
         } catch (\Exception $e) {
             DB::rollBack();
