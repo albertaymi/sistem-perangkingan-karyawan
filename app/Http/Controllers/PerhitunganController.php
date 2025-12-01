@@ -951,15 +951,19 @@ class PerhitunganController extends Controller
         // Get detail perhitungan
         $detailPerhitungan = $hasil->detail_perhitungan;
 
-        // Get kriteria dengan nilai
-        $kriteria = SistemKriteria::where('level', 1)->orderBy('urutan')->get();
+        // Get kriteria dengan nilai dan sub-kriteria
+        $kriteriaData = SistemKriteria::where('level', 1)
+            ->with('subKriteria')
+            ->orderBy('urutan')
+            ->get();
+
         $kriteriaScores = [];
 
-        foreach ($kriteria as $k) {
+        foreach ($kriteriaData as $k) {
             $kriteriaScores[] = [
                 'nama' => $k->nama_kriteria,
                 'bobot' => number_format($k->bobot, 0),
-                'tipe' => $k->tipe === 'benefit' ? 'Benefit' : 'Cost',
+                'tipe' => $k->jenis_kriteria === 'benefit' ? 'Benefit' : 'Cost',
                 'nilai' => number_format($detailPerhitungan['decision_matrix'][$k->nama_kriteria] ?? 0, 0),
             ];
         }
@@ -970,7 +974,8 @@ class PerhitunganController extends Controller
             'periodeLabel',
             'totalKaryawan',
             'detailPerhitungan',
-            'kriteriaScores'
+            'kriteriaScores',
+            'kriteriaData'
         ));
 
         $pdf->setPaper('a4', 'portrait');

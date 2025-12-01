@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -165,40 +166,9 @@
             margin-bottom: 15px;
             font-size: 9px;
         }
-
-        .page-break {
-            page-break-after: always;
-        }
-
-        .statistics {
-            background: #F9FAFB;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #E5E7EB;
-            margin-bottom: 15px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-            font-size: 9px;
-        }
-
-        .stat-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .stat-label {
-            color: #666;
-        }
-
-        .stat-value {
-            font-weight: bold;
-            color: #333;
-        }
     </style>
 </head>
+
 <body>
     {{-- Header --}}
     <div class="header">
@@ -235,7 +205,7 @@
     </div>
 
     {{-- Podium Top 3 --}}
-    @if($hasilRanking->count() >= 3)
+    @if ($hasilRanking->count() >= 3)
         <h3 class="section-title">🏆 Top 3 Karyawan Terbaik</h3>
         <table>
             <thead>
@@ -249,10 +219,11 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($hasilRanking->take(3) as $hasil)
+                @foreach ($hasilRanking->take(3) as $hasil)
                     <tr class="rank-{{ $hasil->ranking }}">
                         <td class="text-center">
-                            <span class="rank-badge {{ $hasil->ranking == 1 ? 'badge-gold' : ($hasil->ranking == 2 ? 'badge-silver' : 'badge-bronze') }}">
+                            <span
+                                class="rank-badge {{ $hasil->ranking == 1 ? 'badge-gold' : ($hasil->ranking == 2 ? 'badge-silver' : 'badge-bronze') }}">
                                 {{ $hasil->ranking }}
                             </span>
                         </td>
@@ -286,11 +257,12 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($hasilRanking as $hasil)
+            @foreach ($hasilRanking as $hasil)
                 <tr class="{{ $hasil->ranking <= 3 ? 'rank-' . $hasil->ranking : '' }}">
                     <td class="text-center">
-                        @if($hasil->ranking <= 3)
-                            <span class="rank-badge {{ $hasil->ranking == 1 ? 'badge-gold' : ($hasil->ranking == 2 ? 'badge-silver' : 'badge-bronze') }}">
+                        @if ($hasil->ranking <= 3)
+                            <span
+                                class="rank-badge {{ $hasil->ranking == 1 ? 'badge-gold' : ($hasil->ranking == 2 ? 'badge-silver' : 'badge-bronze') }}">
                                 {{ $hasil->ranking }}
                             </span>
                         @else
@@ -309,99 +281,6 @@
         </tbody>
     </table>
 
-    {{-- Statistik Tambahan --}}
-    <div class="page-break"></div>
-
-    <h3 class="section-title">Statistik dan Analisis</h3>
-
-    <div class="statistics">
-        <h4 style="font-size: 11px; margin-bottom: 10px; color: #4F46E5;">Distribusi Skor</h4>
-        @php
-            $skorTertinggi = $hasilRanking->max('skor_topsis');
-            $skorTerendah = $hasilRanking->min('skor_topsis');
-            $rentang = $skorTertinggi - $skorTerendah;
-            $skorRataRata = $hasilRanking->avg('skor_topsis');
-            $stdDev = sqrt($hasilRanking->reduce(function($carry, $item) use ($skorRataRata) {
-                return $carry + pow($item->skor_topsis - $skorRataRata, 2);
-            }, 0) / $hasilRanking->count());
-        @endphp
-
-        <div class="stat-row">
-            <span class="stat-label">Skor Tertinggi:</span>
-            <span class="stat-value">{{ number_format($skorTertinggi, 6) }} ({{ number_format($skorTertinggi * 100, 2) }}%)</span>
-        </div>
-        <div class="stat-row">
-            <span class="stat-label">Skor Terendah:</span>
-            <span class="stat-value">{{ number_format($skorTerendah, 6) }} ({{ number_format($skorTerendah * 100, 2) }}%)</span>
-        </div>
-        <div class="stat-row">
-            <span class="stat-label">Rentang Skor:</span>
-            <span class="stat-value">{{ number_format($rentang, 6) }}</span>
-        </div>
-        <div class="stat-row">
-            <span class="stat-label">Rata-rata Skor:</span>
-            <span class="stat-value">{{ number_format($skorRataRata, 6) }} ({{ number_format($skorRataRata * 100, 2) }}%)</span>
-        </div>
-        <div class="stat-row">
-            <span class="stat-label">Standar Deviasi:</span>
-            <span class="stat-value">{{ number_format($stdDev, 6) }}</span>
-        </div>
-    </div>
-
-    {{-- Distribusi Per Divisi --}}
-    @php
-        $perDivisi = $hasilRanking->groupBy('karyawan.divisi')->map(function($items) {
-            return [
-                'count' => $items->count(),
-                'avg_skor' => $items->avg('skor_topsis'),
-                'top_rank' => $items->min('ranking')
-            ];
-        })->sortByDesc('avg_skor');
-    @endphp
-
-    @if($perDivisi->count() > 0)
-        <h4 style="font-size: 11px; margin: 15px 0 10px 0; color: #4F46E5;">Distribusi Per Divisi</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 40%;">Divisi</th>
-                    <th style="width: 20%; text-align: center;">Jumlah</th>
-                    <th style="width: 20%; text-align: center;">Rata-rata Skor</th>
-                    <th style="width: 20%; text-align: center;">Rank Tertinggi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($perDivisi as $divisi => $data)
-                    <tr>
-                        <td>{{ $divisi }}</td>
-                        <td class="text-center">{{ $data['count'] }}</td>
-                        <td class="text-center">{{ number_format($data['avg_skor'], 4) }}</td>
-                        <td class="text-center">#{{ $data['top_rank'] }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
-
-    {{-- Metodologi TOPSIS --}}
-    <h3 class="section-title">Tentang Metode TOPSIS</h3>
-    <p style="text-align: justify; margin-bottom: 10px; font-size: 9px;">
-        <strong>TOPSIS (Technique for Order of Preference by Similarity to Ideal Solution)</strong> adalah metode pengambilan keputusan multikriteria yang didasarkan pada konsep bahwa alternatif terpilih harus memiliki jarak terdekat dari solusi ideal positif dan jarak terjauh dari solusi ideal negatif.
-    </p>
-
-    <div style="background: #FEF3C7; border: 1px solid #FCD34D; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
-        <strong style="font-size: 10px;">Formula Perhitungan:</strong><br>
-        <div style="font-family: 'Courier New', monospace; font-size: 9px; margin-top: 5px;">
-            V = D- / (D+ + D-)
-        </div>
-        <p style="margin-top: 5px; font-size: 8px;">
-            Dimana:<br>
-            • V = Preference Value (Skor TOPSIS)<br>
-            • D+ = Jarak ke Solusi Ideal Positif<br>
-            • D- = Jarak ke Solusi Ideal Negatif
-        </p>
-    </div>
-
     {{-- Footer --}}
     <div class="footer">
         <p>Dokumen ini digenerate secara otomatis oleh Sistem Perangkingan Karyawan</p>
@@ -409,4 +288,5 @@
         <p style="margin-top: 5px; font-style: italic;">Confidential - Untuk Penggunaan Internal Only</p>
     </div>
 </body>
+
 </html>

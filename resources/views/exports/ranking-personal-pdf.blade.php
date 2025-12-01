@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,10 +76,24 @@
             margin: 10px 0;
         }
 
-        .rank-1 { background: linear-gradient(135deg, #FDE68A, #FCD34D); color: #92400E; }
-        .rank-2 { background: linear-gradient(135deg, #E5E7EB, #D1D5DB); color: #374151; }
-        .rank-3 { background: linear-gradient(135deg, #FED7AA, #FDBA74); color: #92400E; }
-        .rank-other { background: linear-gradient(135deg, #6366F1, #4F46E5); }
+        .rank-1 {
+            background: linear-gradient(135deg, #FDE68A, #FCD34D);
+            color: #92400E;
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #E5E7EB, #D1D5DB);
+            color: #374151;
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #FED7AA, #FDBA74);
+            color: #92400E;
+        }
+
+        .rank-other {
+            background: linear-gradient(135deg, #6366F1, #4F46E5);
+        }
 
         .score-card {
             background: white;
@@ -201,6 +216,7 @@
         }
     </style>
 </head>
+
 <body>
     {{-- Header --}}
     <div class="header">
@@ -227,155 +243,205 @@
             <span class="info-label">Jabatan</span>
             <span class="info-value">: {{ $hasil->karyawan->jabatan }}</span>
         </div>
-        <div class="info-row">
-            <span class="info-label">Email</span>
-            <span class="info-value">: {{ $hasil->karyawan->email }}</span>
-        </div>
     </div>
 
     {{-- Ranking Badge --}}
     <div class="text-center">
-        <span class="ranking-badge {{ $hasil->ranking == 1 ? 'rank-1' : ($hasil->ranking == 2 ? 'rank-2' : ($hasil->ranking == 3 ? 'rank-3' : 'rank-other')) }}">
+        <span
+            class="ranking-badge {{ $hasil->ranking == 1 ? 'rank-1' : ($hasil->ranking == 2 ? 'rank-2' : ($hasil->ranking == 3 ? 'rank-3' : 'rank-other')) }}">
             Peringkat #{{ $hasil->ranking }} dari {{ $totalKaryawan }} Karyawan
         </span>
     </div>
 
-    {{-- Skor TOPSIS --}}
-    <div class="score-card">
-        <h3>Skor TOPSIS</h3>
-        <div class="score-value">{{ number_format($hasil->skor_topsis, 4) }}</div>
-        <div class="score-percentage">({{ number_format($hasil->skor_topsis * 100, 2) }}%)</div>
-    </div>
+    {{-- Detail Penilaian Per Kriteria --}}
+    @php
+        $kriteriaWithPenilaian = [];
+        foreach ($kriteriaData as $kriteria) {
+            $penilaianItems = [];
+            $totalSkor = 0;
+            $hasSubKriteria = $kriteria->subKriteria->count() > 0;
 
-    {{-- Distance Metrics --}}
-    <div class="grid-2">
-        <div class="metric-card">
-            <div class="metric-label">D+ (Jarak ke Solusi Ideal Positif)</div>
-            <div class="metric-value">{{ number_format($hasil->jarak_ideal_positif, 6) }}</div>
+            if ($hasSubKriteria) {
+                foreach ($kriteria->subKriteria as $subKriteria) {
+                    $penilaian = $hasil->karyawan
+                        ->penilaian()
+                        ->where('id_sub_kriteria', $subKriteria->id)
+                        ->where('bulan', $hasil->bulan)
+                        ->where('tahun', $hasil->tahun)
+                        ->first();
+
+                    if ($penilaian) {
+                        $penilaianItems[] = [
+                            'nama' => $subKriteria->nama_kriteria,
+                            'bobot' => $subKriteria->bobot,
+                            'nilai' => $penilaian->nilai,
+                            'tipe_input' => $subKriteria->tipe_input,
+                            'nilai_min' => $subKriteria->nilai_min,
+                            'nilai_max' => $subKriteria->nilai_max,
+                        ];
+                        $totalSkor += $penilaian->nilai;
+                    }
+                }
+            } else {
+                $penilaian = $hasil->karyawan
+                    ->penilaian()
+                    ->where('id_kriteria', $kriteria->id)
+                    ->where('bulan', $hasil->bulan)
+                    ->where('tahun', $hasil->tahun)
+                    ->first();
+
+                if ($penilaian) {
+                    $penilaianItems[] = [
+                        'nama' => $kriteria->nama_kriteria,
+                        'bobot' => $kriteria->bobot,
+                        'nilai' => $penilaian->nilai,
+                        'tipe_input' => $kriteria->tipe_input,
+                        'nilai_min' => $kriteria->nilai_min,
+                        'nilai_max' => $kriteria->nilai_max,
+                    ];
+                    $totalSkor = $penilaian->nilai;
+                }
+            }
+
+            $kriteriaWithPenilaian[] = [
+                'kriteria' => $kriteria,
+                'items' => $penilaianItems,
+                'totalSkor' => $totalSkor,
+                'hasSubKriteria' => $hasSubKriteria,
+            ];
+        }
+    @endphp
+
+    @foreach ($kriteriaWithPenilaian as $data)
+        @php
+            $kriteria = $data['kriteria'];
+            $isBenefit = $kriteria->jenis_kriteria === 'benefit';
+            $bgColor = $isBenefit ? '#ecfdf5' : '#fef2f2';
+            $borderColor = $isBenefit ? '#10b981' : '#ef4444';
+            $textColor = $isBenefit ? '#059669' : '#dc2626';
+        @endphp
+
+        <div class="card" style="border-left: 4px solid {{ $borderColor }}; background: {{ $bgColor }};">
+            <h3 style="color: {{ $textColor }}; margin-bottom: 15px; font-size: 12px; font-weight: bold;">
+                {{ $kriteria->nama_kriteria }}
+                ({{ $isBenefit ? 'Benefit ↑' : 'Cost ↓' }})
+                - Bobot: {{ $kriteria->bobot }}%
+            </h3>
+
+            <table class="table" style="margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; width: 35%;">
+                            {{ $data['hasSubKriteria'] ? 'Sub-Kriteria' : 'Kriteria' }}
+                        </th>
+                        <th style="text-align: center; width: 15%;">Bobot (%)</th>
+                        <th style="text-align: left; width: 30%;">Tipe Input</th>
+                        <th style="text-align: center; width: 20%;">Skor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($data['items'] as $item)
+                        <tr>
+                            <td style="font-weight: 600;">{{ $item['nama'] }}</td>
+                            <td style="text-align: center;">{{ $item['bobot'] }}%</td>
+                            <td style="font-size: 10px;">
+                                @if ($item['tipe_input'] === 'angka')
+                                    Input Angka ({{ $item['nilai_min'] ?? 0 }}-{{ $item['nilai_max'] ?? 100 }})
+                                @elseif($item['tipe_input'] === 'rating')
+                                    Rating Scale (1-5)
+                                @elseif($item['tipe_input'] === 'dropdown')
+                                    Dropdown
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td style="text-align: center; font-weight: 700; color: {{ $textColor }};">
+                                {{ number_format($item['nilai'], 0) }}
+                            </td>
+                        </tr>
+                    @endforeach
+
+                    @if ($data['hasSubKriteria'])
+                        <tr style="background: #f9fafb; font-weight: bold;">
+                            <td colspan="3" style="text-align: left;">
+                                Total Skor {{ $kriteria->nama_kriteria }}
+                            </td>
+                            <td style="text-align: center; font-size: 14px; color: {{ $textColor }};">
+                                {{ number_format($data['totalSkor'], 0) }}
+                            </td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
         </div>
-        <div class="metric-card">
-            <div class="metric-label">D- (Jarak ke Solusi Ideal Negatif)</div>
-            <div class="metric-value">{{ number_format($hasil->jarak_ideal_negatif, 6) }}</div>
+    @endforeach
+
+    {{-- Ringkasan Keseluruhan --}}
+    <div class="card"
+        style="background: linear-gradient(to right, #f9fafb, #ffffff); border: 2px solid #e5e7eb; page-break-inside: avoid;">
+        <h3 class="card-title" style="margin-bottom: 15px;">📊 Ringkasan Keseluruhan</h3>
+
+        <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse;">
+            <tr>
+                <td
+                    style="width: 33%; text-align: center; background: #eff6ff; padding: 15px; border-radius: 8px; vertical-align: top;">
+                    <div style="font-size: 10px; color: #2563eb; font-weight: 600; margin-bottom: 5px;">
+                        Skor TOPSIS Final
+                    </div>
+                    <div style="font-size: 20px; font-weight: bold; color: #1e40af;">
+                        {{ number_format($hasil->skor_topsis, 4) }}
+                    </div>
+                    <div style="font-size: 10px; color: #2563eb; margin-top: 3px;">
+                        {{ number_format($hasil->skor_topsis * 100, 2) }}%
+                    </div>
+                </td>
+                <td style="width: 1%;"></td>
+                <td
+                    style="width: 33%; text-align: center; background: #f0fdf4; padding: 15px; border-radius: 8px; vertical-align: top;">
+                    <div style="font-size: 10px; color: #16a34a; font-weight: 600; margin-bottom: 5px;">
+                        Jarak Ideal Positif (D+)
+                    </div>
+                    <div style="font-size: 20px; font-weight: bold; color: #15803d;">
+                        {{ number_format($hasil->jarak_ideal_positif, 4) }}
+                    </div>
+                    <div style="font-size: 9px; color: #16a34a; margin-top: 3px;">
+                        Semakin kecil semakin baik
+                    </div>
+                </td>
+                <td style="width: 1%;"></td>
+                <td
+                    style="width: 33%; text-align: center; background: #fef2f2; padding: 15px; border-radius: 8px; vertical-align: top;">
+                    <div style="font-size: 10px; color: #dc2626; font-weight: 600; margin-bottom: 5px;">
+                        Jarak Ideal Negatif (D-)
+                    </div>
+                    <div style="font-size: 20px; font-weight: bold; color: #b91c1c;">
+                        {{ number_format($hasil->jarak_ideal_negatif, 4) }}
+                    </div>
+                    <div style="font-size: 9px; color: #dc2626; margin-top: 3px;">
+                        Semakin besar semakin baik
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div
+            style="text-align: center; padding: 15px; background: linear-gradient(to right, #fef3c7, #fed7aa); border: 1px solid #fbbf24; border-radius: 8px;">
+            <p style="font-size: 11px; color: #374151; margin: 0; line-height: 1.6;">
+                Dengan skor <strong style="color: #1e40af;">{{ number_format($hasil->skor_topsis, 4) }}</strong>,
+                <strong>{{ $hasil->karyawan->nama }}</strong>
+                berada di peringkat
+                <strong
+                    style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px;
+                    @if ($hasil->ranking == 1) background: #fde047; color: #854d0e;
+                    @elseif($hasil->ranking == 2) background: #e5e7eb; color: #1f2937;
+                    @elseif($hasil->ranking == 3) background: #fed7aa; color: #9a3412;
+                    @else background: #dbeafe; color: #1e40af; @endif
+                ">
+                    #{{ $hasil->ranking }}
+                </strong>
+                untuk periode <strong>{{ $periodeLabel }}</strong>
+            </p>
         </div>
-    </div>
-
-    {{-- Nilai Per Kriteria --}}
-    <h3 class="section-title">Nilai Per Kriteria</h3>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 50%;">Kriteria</th>
-                <th style="width: 15%; text-align: center;">Bobot</th>
-                <th style="width: 15%; text-align: center;">Tipe</th>
-                <th style="width: 20%; text-align: center;">Skor Akhir</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($kriteriaScores as $kriteria)
-                <tr>
-                    <td>{{ $kriteria['nama'] }}</td>
-                    <td style="text-align: center;">{{ $kriteria['bobot'] }}%</td>
-                    <td style="text-align: center;">{{ $kriteria['tipe'] }}</td>
-                    <td style="text-align: center;"><strong>{{ $kriteria['nilai'] }}</strong></td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    {{-- Page Break --}}
-    <div class="page-break"></div>
-
-    {{-- Detail Perhitungan TOPSIS --}}
-    <h3 class="section-title">Detail Perhitungan TOPSIS</h3>
-
-    <p style="margin-bottom: 15px; text-align: justify;">
-        Metode TOPSIS (Technique for Order of Preference by Similarity to Ideal Solution) menghitung jarak terhadap solusi ideal positif dan negatif untuk menentukan ranking karyawan terbaik.
-    </p>
-
-    {{-- Decision Matrix --}}
-    <h4 style="font-size: 12px; margin: 15px 0 10px 0; color: #333;">1. Decision Matrix (Matriks Keputusan)</h4>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 50%;">Kriteria</th>
-                <th style="width: 50%; text-align: center;">Nilai Original</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($detailPerhitungan['decision_matrix'] ?? [] as $key => $value)
-                <tr>
-                    <td>{{ $key }}</td>
-                    <td style="text-align: center;">{{ number_format($value, 4) }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    {{-- Normalized Matrix --}}
-    <h4 style="font-size: 12px; margin: 15px 0 10px 0; color: #333;">2. Normalized Matrix (Matriks Ternormalisasi)</h4>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 50%;">Kriteria</th>
-                <th style="width: 50%; text-align: center;">Nilai Normalisasi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($detailPerhitungan['normalized_matrix'] ?? [] as $key => $value)
-                <tr>
-                    <td>{{ $key }}</td>
-                    <td style="text-align: center;">{{ number_format($value, 6) }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    {{-- Weighted Matrix --}}
-    <h4 style="font-size: 12px; margin: 15px 0 10px 0; color: #333;">3. Weighted Matrix (Matriks Terbobot)</h4>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 50%;">Kriteria</th>
-                <th style="width: 50%; text-align: center;">Nilai Terbobot</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($detailPerhitungan['weighted_matrix'] ?? [] as $key => $value)
-                <tr>
-                    <td>{{ $key }}</td>
-                    <td style="text-align: center;">{{ number_format($value, 6) }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    {{-- Formula TOPSIS --}}
-    <h4 style="font-size: 12px; margin: 15px 0 10px 0; color: #333;">4. Perhitungan Skor TOPSIS</h4>
-    <div class="formula-box">
-        <strong>Formula:</strong> V = D- / (D+ + D-)<br><br>
-        <strong>Perhitungan:</strong><br>
-        V = {{ number_format($hasil->jarak_ideal_negatif, 6) }} / ({{ number_format($hasil->jarak_ideal_positif, 6) }} + {{ number_format($hasil->jarak_ideal_negatif, 6) }})<br>
-        V = {{ number_format($hasil->jarak_ideal_negatif, 6) }} / {{ number_format($hasil->jarak_ideal_positif + $hasil->jarak_ideal_negatif, 6) }}<br>
-        V = <span class="highlight">{{ number_format($hasil->skor_topsis, 6) }}</span>
-    </div>
-
-    {{-- Kesimpulan --}}
-    <h3 class="section-title">Kesimpulan</h3>
-    <div style="background: #DBEAFE; padding: 15px; border-radius: 8px; border-left: 4px solid #3B82F6;">
-        <p style="margin-bottom: 8px;">
-            <strong>{{ $hasil->karyawan->nama }}</strong> memperoleh peringkat <strong>#{{ $hasil->ranking }}</strong> dari total <strong>{{ $totalKaryawan }}</strong> karyawan yang dinilai pada periode <strong>{{ $periodeLabel }}</strong>.
-        </p>
-        <p style="margin-bottom: 8px;">
-            Dengan skor TOPSIS sebesar <strong>{{ number_format($hasil->skor_topsis, 4) }}</strong> ({{ number_format($hasil->skor_topsis * 100, 2) }}%), menunjukkan tingkat kinerja yang
-            @if($hasil->ranking <= 3)
-                <strong style="color: #059669;">sangat baik</strong>
-            @elseif($hasil->ranking <= 10)
-                <strong style="color: #3B82F6;">baik</strong>
-            @else
-                <strong>cukup baik</strong>
-            @endif
-            dibandingkan dengan karyawan lainnya.
-        </p>
     </div>
 
     {{-- Footer --}}
@@ -385,4 +451,5 @@
         <p style="margin-top: 5px; font-style: italic;">Confidential - Untuk Penggunaan Internal Only</p>
     </div>
 </body>
+
 </html>
