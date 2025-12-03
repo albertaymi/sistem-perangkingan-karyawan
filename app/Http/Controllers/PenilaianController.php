@@ -402,6 +402,29 @@ class PenilaianController extends Controller
             $tahun = $request->tahun;
             $tanggalPenilaian = Carbon::now();
 
+            // Custom validation: Check nilai against sub-kriteria range
+            $subKriteriaIds = collect($request->penilaian)->pluck('id_sub_kriteria')->unique();
+            $subKriteriaData = SistemKriteria::whereIn('id', $subKriteriaIds)
+                ->get()
+                ->keyBy('id');
+
+            foreach ($request->penilaian as $index => $data) {
+                $subKriteria = $subKriteriaData->get($data['id_sub_kriteria']);
+
+                if ($subKriteria && in_array($subKriteria->tipe_input, ['angka', 'rating'])) {
+                    $nilai = $data['nilai'];
+                    $min = $subKriteria->nilai_min;
+                    $max = $subKriteria->nilai_max;
+
+                    if ($nilai < $min || $nilai > $max) {
+                        DB::rollBack();
+                        return redirect()->back()
+                            ->withInput()
+                            ->with('error', "Nilai untuk '{$subKriteria->nama_kriteria}' harus dalam range {$min} - {$max}. Nilai yang diinput: {$nilai}");
+                    }
+                }
+            }
+
             // Generate periode label
             $namaBulan = [
                 1 => 'Januari',
@@ -587,6 +610,29 @@ class PenilaianController extends Controller
             DB::beginTransaction();
 
             $tanggalPenilaian = Carbon::now();
+
+            // Custom validation: Check nilai against sub-kriteria range
+            $subKriteriaIds = collect($request->penilaian)->pluck('id_sub_kriteria')->unique();
+            $subKriteriaData = SistemKriteria::whereIn('id', $subKriteriaIds)
+                ->get()
+                ->keyBy('id');
+
+            foreach ($request->penilaian as $index => $data) {
+                $subKriteria = $subKriteriaData->get($data['id_sub_kriteria']);
+
+                if ($subKriteria && in_array($subKriteria->tipe_input, ['angka', 'rating'])) {
+                    $nilai = $data['nilai'];
+                    $min = $subKriteria->nilai_min;
+                    $max = $subKriteria->nilai_max;
+
+                    if ($nilai < $min || $nilai > $max) {
+                        DB::rollBack();
+                        return redirect()->back()
+                            ->withInput()
+                            ->with('error', "Nilai untuk '{$subKriteria->nama_kriteria}' harus dalam range {$min} - {$max}. Nilai yang diinput: {$nilai}");
+                    }
+                }
+            }
 
             // Generate periode label
             $namaBulan = [

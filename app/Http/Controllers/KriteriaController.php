@@ -45,8 +45,8 @@ class KriteriaController extends Controller
             'bobot' => 'required|numeric|min:0|max:100',
             'assigned_to_supervisor_id' => 'nullable|exists:users,id',
             'tipe_input' => 'nullable|in:angka,rating,dropdown',
-            'nilai_min' => 'nullable|numeric',
-            'nilai_max' => 'nullable|numeric|gt:nilai_min',
+            'nilai_min' => 'nullable|numeric|min:0',
+            'nilai_max' => 'nullable|numeric|min:0|gt:nilai_min',
         ], [
             'nama_kriteria.required' => 'Nama kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama kriteria maksimal 100 karakter',
@@ -59,7 +59,9 @@ class KriteriaController extends Controller
             'assigned_to_supervisor_id.exists' => 'Supervisor yang dipilih tidak valid',
             'tipe_input.in' => 'Tipe input harus: angka, rating, atau dropdown',
             'nilai_min.numeric' => 'Nilai minimum harus berupa angka',
+            'nilai_min.min' => 'Nilai minimum tidak boleh negatif',
             'nilai_max.numeric' => 'Nilai maximum harus berupa angka',
+            'nilai_max.min' => 'Nilai maximum tidak boleh negatif',
             'nilai_max.gt' => 'Nilai maximum harus lebih besar dari nilai minimum',
         ]);
 
@@ -239,8 +241,8 @@ class KriteriaController extends Controller
             'bobot' => 'required|numeric|min:0|max:100',
             'assigned_to_supervisor_id' => 'nullable|exists:users,id',
             'tipe_input' => 'nullable|in:angka,rating,dropdown',
-            'nilai_min' => 'nullable|numeric',
-            'nilai_max' => 'nullable|numeric|gt:nilai_min',
+            'nilai_min' => 'nullable|numeric|min:0',
+            'nilai_max' => 'nullable|numeric|min:0|gt:nilai_min',
         ], [
             'nama_kriteria.required' => 'Nama kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama kriteria maksimal 100 karakter',
@@ -253,7 +255,9 @@ class KriteriaController extends Controller
             'assigned_to_supervisor_id.exists' => 'Supervisor yang dipilih tidak valid',
             'tipe_input.in' => 'Tipe input harus: angka, rating, atau dropdown',
             'nilai_min.numeric' => 'Nilai minimum harus berupa angka',
+            'nilai_min.min' => 'Nilai minimum tidak boleh negatif',
             'nilai_max.numeric' => 'Nilai maximum harus berupa angka',
+            'nilai_max.min' => 'Nilai maximum tidak boleh negatif',
             'nilai_max.gt' => 'Nilai maximum harus lebih besar dari nilai minimum',
         ]);
 

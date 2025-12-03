@@ -496,12 +496,12 @@
                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
                             <option value="">Pilih Tipe Input</option>
                             <option value="angka">Angka (Input numerik dengan range)</option>
-                            <option value="rating">Rating (Bintang 1-5)</option>
+                            <option value="rating">Rating (Skala fleksibel)</option>
                             <option value="dropdown">Dropdown (Pilihan tetap)</option>
                         </select>
                         <p class="mt-1 text-xs text-gray-500">
                             <strong>Angka:</strong> Untuk input angka seperti jumlah hari, jumlah keterlambatan, dll<br>
-                            <strong>Rating:</strong> Untuk penilaian dengan bintang 1-5<br>
+                            <strong>Rating:</strong> Untuk penilaian dengan skala rating (misal: 1-5, 1-10, dll)<br>
                             <strong>Dropdown:</strong> Untuk pilihan tetap seperti "Lolos", "Tidak Lolos", dll
                         </p>
                     </div>
@@ -514,6 +514,7 @@
                                     Nilai Minimum <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="nilai_min" id="nilai_min_tambah" step="0.01"
+                                    min="0"
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                     placeholder="Contoh: 0" oninput="clearFieldError(this)">
                             </div>
@@ -651,7 +652,7 @@
                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <option value="">Pilih Tipe Input</option>
                             <option value="angka">Angka (Input numerik dengan range)</option>
-                            <option value="rating">Rating (Bintang 1-5)</option>
+                            <option value="rating">Rating (Skala fleksibel)</option>
                             <option value="dropdown">Dropdown (Pilihan tetap)</option>
                         </select>
                     </div>
@@ -664,6 +665,7 @@
                                     Nilai Minimum <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="nilai_min" id="nilai_min_edit" step="0.01"
+                                    min="0"
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                     oninput="clearFieldError(this)">
                             </div>
@@ -672,6 +674,7 @@
                                     Nilai Maximum <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="nilai_max" id="nilai_max_edit" step="0.01"
+                                    min="0"
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                     oninput="clearFieldError(this)">
                             </div>
@@ -1187,13 +1190,17 @@
                 nilaiMin.required = true;
                 nilaiMax.required = true;
 
-                // Set default values for rating
+                // Clear values - let user define the range
+                nilaiMin.value = '';
+                nilaiMax.value = '';
+
+                // Add placeholder hints
                 if (tipeInput === 'rating') {
-                    nilaiMin.value = 1;
-                    nilaiMax.value = 5;
+                    nilaiMin.placeholder = 'Contoh: 1';
+                    nilaiMax.placeholder = 'Contoh: 5';
                 } else {
-                    nilaiMin.value = '';
-                    nilaiMax.value = '';
+                    nilaiMin.placeholder = 'Contoh: 0';
+                    nilaiMax.placeholder = 'Contoh: 100';
                 }
             } else if (tipeInput === 'dropdown') {
                 dropdownOptions.classList.remove('hidden');
@@ -1320,17 +1327,19 @@
                         document.getElementById('nama_kriteria_edit').value = subKriteria.nama_kriteria;
                         document.getElementById('deskripsi_edit').value = subKriteria.deskripsi || '';
                         document.getElementById('tipe_input_edit').value = subKriteria.tipe_input;
-                        document.getElementById('nilai_min_edit').value = subKriteria.nilai_min !== null ? subKriteria
-                            .nilai_min : '';
-                        document.getElementById('nilai_max_edit').value = subKriteria.nilai_max !== null ? subKriteria
-                            .nilai_max : '';
                         document.getElementById('bobot_edit').value = Math.round(subKriteria.bobot);
 
                         // Clear dropdown options container first
                         clearDropdownOptionsSub('edit');
 
-                        // Toggle range fields
+                        // Toggle range fields FIRST
                         toggleRangeFields('edit');
+
+                        // THEN populate nilai_min and nilai_max AFTER toggle (to prevent clearing)
+                        document.getElementById('nilai_min_edit').value = subKriteria.nilai_min !== null ? subKriteria
+                            .nilai_min : '';
+                        document.getElementById('nilai_max_edit').value = subKriteria.nilai_max !== null ? subKriteria
+                            .nilai_max : '';
 
                         // Load existing dropdown options if tipe_input is dropdown
                         if (subKriteria.tipe_input === 'dropdown' && subKriteria.dropdown_options && subKriteria
@@ -1708,5 +1717,58 @@
             modal.setAttribute('aria-modal', 'true');
             modal.setAttribute('role', 'dialog');
         }
+
+        // Add validation for nilai_min and nilai_max fields in sub-kriteria
+        document.addEventListener('DOMContentLoaded', function() {
+            const rangeInputs = document.querySelectorAll(
+                '#nilai_min_tambah, #nilai_max_tambah, #nilai_min_edit, #nilai_max_edit');
+
+            rangeInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const isMin = this.id.includes('min');
+                    const mode = this.id.includes('tambah') ? 'tambah' : 'edit';
+                    const minInput = document.getElementById(`nilai_min_${mode}`);
+                    const maxInput = document.getElementById(`nilai_max_${mode}`);
+
+                    // Remove previous error
+                    let errorSpan = this.nextElementSibling;
+                    if (errorSpan && errorSpan.classList.contains('inline-error')) {
+                        errorSpan.remove();
+                    }
+
+                    // Validate
+                    const minVal = parseFloat(minInput.value);
+                    const maxVal = parseFloat(maxInput.value);
+                    const currentVal = parseFloat(this.value);
+
+                    let errorMessage = '';
+
+                    // Check for negative values
+                    if (this.value && currentVal < 0) {
+                        errorMessage = 'Nilai tidak boleh negatif';
+                    }
+                    // Check min < max
+                    else if (minInput.value && maxInput.value && minVal >= maxVal) {
+                        errorMessage = 'Nilai minimum harus lebih kecil dari maksimum';
+                    }
+
+                    if (errorMessage) {
+                        this.classList.add('border-red-500', 'focus:ring-red-500');
+                        this.classList.remove('border-gray-300');
+
+                        const error = document.createElement('span');
+                        error.className = 'inline-error text-xs text-red-600 mt-1 block';
+                        error.textContent = errorMessage;
+                        this.parentNode.appendChild(error);
+
+                        this.setCustomValidity(errorMessage);
+                    } else {
+                        this.classList.remove('border-red-500', 'focus:ring-red-500');
+                        this.classList.add('border-gray-300');
+                        this.setCustomValidity('');
+                    }
+                });
+            });
+        });
     </script>
 @endsection

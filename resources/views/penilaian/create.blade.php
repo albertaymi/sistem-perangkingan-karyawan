@@ -615,5 +615,53 @@
                 setTimeout(() => toast.remove(), 500);
             }, 5000);
         }
+
+        // Add validation for number inputs with min/max
+        document.addEventListener('DOMContentLoaded', function() {
+            const numberInputs = document.querySelectorAll('input[type="number"][min][max]');
+
+            numberInputs.forEach(input => {
+                // Add inline error element if not exists
+                if (!input.nextElementSibling || !input.nextElementSibling.classList.contains(
+                        'inline-error')) {
+                    const errorSpan = document.createElement('span');
+                    errorSpan.className = 'inline-error text-xs text-red-600 mt-1 hidden';
+                    input.parentNode.insertBefore(errorSpan, input.nextSibling);
+                }
+
+                input.addEventListener('input', function() {
+                    const min = parseFloat(this.min);
+                    const max = parseFloat(this.max);
+                    const value = parseFloat(this.value);
+                    const errorSpan = this.nextElementSibling;
+
+                    if (this.value && (value < min || value > max)) {
+                        this.classList.add('border-red-500', 'focus:ring-red-500',
+                            'focus:border-red-500');
+                        this.classList.remove('border-gray-300', 'focus:ring-blue-500',
+                            'focus:border-blue-500');
+                        if (errorSpan && errorSpan.classList.contains('inline-error')) {
+                            errorSpan.textContent = `Nilai harus antara ${min} dan ${max}`;
+                            errorSpan.classList.remove('hidden');
+                        }
+                        this.setCustomValidity(`Nilai harus antara ${min} dan ${max}`);
+                    } else {
+                        this.classList.remove('border-red-500', 'focus:ring-red-500',
+                            'focus:border-red-500');
+                        this.classList.add('border-gray-300', 'focus:ring-blue-500',
+                            'focus:border-blue-500');
+                        if (errorSpan && errorSpan.classList.contains('inline-error')) {
+                            errorSpan.classList.add('hidden');
+                        }
+                        this.setCustomValidity('');
+                    }
+                });
+
+                // Validate on blur
+                input.addEventListener('blur', function() {
+                    this.dispatchEvent(new Event('input'));
+                });
+            });
+        });
     </script>
 @endsection

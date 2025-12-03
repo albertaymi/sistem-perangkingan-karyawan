@@ -456,7 +456,7 @@
                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
                             <option value="">-- Tidak ada (Gunakan Sub-Kriteria) --</option>
                             <option value="angka">Input Angka (Rentang Nilai)</option>
-                            <option value="rating">Rating Scale (1-5)</option>
+                            <option value="rating">Rating Scale (Fleksibel)</option>
                             <option value="dropdown">Dropdown Selection (Pilihan Tetap)</option>
                         </select>
                         <p class="mt-1 text-xs text-gray-500">
@@ -475,7 +475,7 @@
                                     <label for="nilai_min_tambah" class="block text-xs font-medium text-gray-600 mb-1">
                                         Nilai Minimum
                                     </label>
-                                    <input type="number" name="nilai_min" id="nilai_min_tambah"
+                                    <input type="number" name="nilai_min" id="nilai_min_tambah" min="0"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-sm"
                                         placeholder="Contoh: 0" oninput="clearFieldError(this)">
                                 </div>
@@ -485,7 +485,7 @@
                                     <label for="nilai_max_tambah" class="block text-xs font-medium text-gray-600 mb-1">
                                         Nilai Maximum
                                     </label>
-                                    <input type="number" name="nilai_max" id="nilai_max_tambah"
+                                    <input type="number" name="nilai_max" id="nilai_max_tambah" min="0"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-sm"
                                         placeholder="Contoh: 100" oninput="clearFieldError(this)">
                                 </div>
@@ -646,7 +646,7 @@
                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <option value="">-- Tidak ada (Gunakan Sub-Kriteria) --</option>
                             <option value="angka">Input Angka (Rentang Nilai)</option>
-                            <option value="rating">Rating Scale (1-5)</option>
+                            <option value="rating">Rating Scale (Fleksibel)</option>
                             <option value="dropdown">Dropdown Selection (Pilihan Tetap)</option>
                         </select>
                         <p class="mt-1 text-xs text-gray-500">
@@ -935,13 +935,17 @@
                 nilaiMin.required = true;
                 nilaiMax.required = true;
 
-                // Set default values for rating
+                // Clear values - let user define the range
+                nilaiMin.value = '';
+                nilaiMax.value = '';
+
+                // Add placeholder hints
                 if (tipeInput === 'rating') {
-                    nilaiMin.value = 1;
-                    nilaiMax.value = 5;
+                    nilaiMin.placeholder = 'Contoh: 1';
+                    nilaiMax.placeholder = 'Contoh: 5';
                 } else {
-                    nilaiMin.value = '';
-                    nilaiMax.value = '';
+                    nilaiMin.placeholder = 'Contoh: 0';
+                    nilaiMax.placeholder = 'Contoh: 100';
                 }
             } else if (tipeInput === 'dropdown') {
                 dropdownOptions.classList.remove('hidden');
@@ -1072,16 +1076,18 @@
                         document.getElementById('assigned_to_supervisor_id_edit').value = kriteria
                             .assigned_to_supervisor_id || '';
                         document.getElementById('tipe_input_edit').value = kriteria.tipe_input || '';
-                        document.getElementById('nilai_min_edit').value = kriteria.nilai_min !== null ? kriteria
-                            .nilai_min : '';
-                        document.getElementById('nilai_max_edit').value = kriteria.nilai_max !== null ? kriteria
-                            .nilai_max : '';
 
                         // Clear dropdown options container first
                         clearDropdownOptions('edit');
 
-                        // Toggle range fields visibility based on tipe_input
+                        // Toggle range fields visibility based on tipe_input FIRST
                         toggleKriteriaRangeFields('edit');
+
+                        // THEN populate nilai_min and nilai_max AFTER toggle (to prevent clearing)
+                        document.getElementById('nilai_min_edit').value = kriteria.nilai_min !== null ? kriteria
+                            .nilai_min : '';
+                        document.getElementById('nilai_max_edit').value = kriteria.nilai_max !== null ? kriteria
+                            .nilai_max : '';
 
                         // Load existing dropdown options if tipe_input is dropdown
                         if (kriteria.tipe_input === 'dropdown' && kriteria.dropdown_options && kriteria.dropdown_options
@@ -1299,5 +1305,58 @@
                 setTimeout(() => toast.remove(), 500);
             }, 5000);
         }
+
+        // Add validation for nilai_min and nilai_max fields
+        document.addEventListener('DOMContentLoaded', function() {
+            const rangeInputs = document.querySelectorAll(
+                '#nilai_min_tambah, #nilai_max_tambah, #nilai_min_edit, #nilai_max_edit');
+
+            rangeInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const isMin = this.id.includes('min');
+                    const mode = this.id.includes('tambah') ? 'tambah' : 'edit';
+                    const minInput = document.getElementById(`nilai_min_${mode}`);
+                    const maxInput = document.getElementById(`nilai_max_${mode}`);
+
+                    // Remove previous error
+                    let errorSpan = this.nextElementSibling;
+                    if (errorSpan && errorSpan.classList.contains('inline-error')) {
+                        errorSpan.remove();
+                    }
+
+                    // Validate
+                    const minVal = parseFloat(minInput.value);
+                    const maxVal = parseFloat(maxInput.value);
+                    const currentVal = parseFloat(this.value);
+
+                    let errorMessage = '';
+
+                    // Check for negative values
+                    if (this.value && currentVal < 0) {
+                        errorMessage = 'Nilai tidak boleh negatif';
+                    }
+                    // Check min < max
+                    else if (minInput.value && maxInput.value && minVal >= maxVal) {
+                        errorMessage = 'Nilai minimum harus lebih kecil dari maksimum';
+                    }
+
+                    if (errorMessage) {
+                        this.classList.add('border-red-500', 'focus:ring-red-500');
+                        this.classList.remove('border-gray-300');
+
+                        const error = document.createElement('span');
+                        error.className = 'inline-error text-xs text-red-600 mt-1 block';
+                        error.textContent = errorMessage;
+                        this.parentNode.appendChild(error);
+
+                        this.setCustomValidity(errorMessage);
+                    } else {
+                        this.classList.remove('border-red-500', 'focus:ring-red-500');
+                        this.classList.add('border-gray-300');
+                        this.setCustomValidity('');
+                    }
+                });
+            });
+        });
     </script>
 @endsection

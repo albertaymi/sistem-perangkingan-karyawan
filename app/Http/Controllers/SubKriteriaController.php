@@ -26,8 +26,8 @@ class SubKriteriaController extends Controller
             'deskripsi' => 'nullable|string',
             'bobot' => 'required|numeric|min:0|max:100',
             'tipe_input' => 'required|in:angka,rating,dropdown',
-            'nilai_min' => 'nullable|numeric',
-            'nilai_max' => 'nullable|numeric|gt:nilai_min',
+            'nilai_min' => 'nullable|numeric|min:0',
+            'nilai_max' => 'nullable|numeric|min:0|gt:nilai_min',
         ], [
             'nama_kriteria.required' => 'Nama sub-kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama sub-kriteria maksimal 100 karakter',
@@ -38,7 +38,9 @@ class SubKriteriaController extends Controller
             'tipe_input.required' => 'Tipe input wajib dipilih',
             'tipe_input.in' => 'Tipe input harus angka, rating, atau dropdown',
             'nilai_min.numeric' => 'Nilai min harus berupa angka',
+            'nilai_min.min' => 'Nilai minimum tidak boleh negatif',
             'nilai_max.numeric' => 'Nilai max harus berupa angka',
+            'nilai_max.min' => 'Nilai maximum tidak boleh negatif',
             'nilai_max.gt' => 'Nilai max harus lebih besar dari nilai min',
         ]);
 
@@ -202,8 +204,8 @@ class SubKriteriaController extends Controller
             'deskripsi' => 'nullable|string',
             'bobot' => 'required|numeric|min:0|max:100',
             'tipe_input' => 'required|in:angka,rating,dropdown',
-            'nilai_min' => 'nullable|numeric',
-            'nilai_max' => 'nullable|numeric|gt:nilai_min',
+            'nilai_min' => 'nullable|numeric|min:0',
+            'nilai_max' => 'nullable|numeric|min:0|gt:nilai_min',
         ], [
             'nama_kriteria.required' => 'Nama sub-kriteria wajib diisi',
             'nama_kriteria.max' => 'Nama sub-kriteria maksimal 100 karakter',
@@ -214,7 +216,9 @@ class SubKriteriaController extends Controller
             'tipe_input.required' => 'Tipe input wajib dipilih',
             'tipe_input.in' => 'Tipe input harus angka, rating, atau dropdown',
             'nilai_min.numeric' => 'Nilai min harus berupa angka',
+            'nilai_min.min' => 'Nilai minimum tidak boleh negatif',
             'nilai_max.numeric' => 'Nilai max harus berupa angka',
+            'nilai_max.min' => 'Nilai maximum tidak boleh negatif',
             'nilai_max.gt' => 'Nilai max harus lebih besar dari nilai min',
         ]);
 

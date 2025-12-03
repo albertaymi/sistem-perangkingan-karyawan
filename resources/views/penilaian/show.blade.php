@@ -326,7 +326,11 @@
                                                     <!-- Visual Representation -->
                                                     @if ($item->subKriteria && $item->subKriteria->tipe_input === 'rating')
                                                         <div class="flex items-center mt-1">
-                                                            @for ($star = 1; $star <= 5; $star++)
+                                                            @php
+                                                                $minRating = $item->subKriteria->nilai_min ?? 1;
+                                                                $maxRating = $item->subKriteria->nilai_max ?? 5;
+                                                            @endphp
+                                                            @for ($star = $minRating; $star <= $maxRating; $star++)
                                                                 <svg class="w-4 h-4 {{ $star <= $item->nilai ? 'text-yellow-400' : 'text-gray-300' }}"
                                                                     fill="currentColor" viewBox="0 0 20 20">
                                                                     <path
