@@ -30,6 +30,9 @@ return new class extends Migration
             $table->foreignId('created_by_super_admin_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('created_by_hrd_id')->nullable()->constrained('users')->cascadeOnDelete();
 
+            // Relasi ke Supervisor (untuk karyawan yang ditugaskan ke supervisor)
+            $table->foreignId('assigned_to_supervisor_id')->nullable()->constrained('users')->nullOnDelete();
+
             // Status approval untuk registrasi baru
             $table->enum('status_approval', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamp('approved_at')->nullable();

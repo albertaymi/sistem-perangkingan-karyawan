@@ -40,30 +40,11 @@ class DashboardController extends Controller
           ->exists(),
       ];
     } elseif (auth()->user()->isSupervisor()) {
-      // Supervisor: Show assigned karyawan and penilaian stats
-      $assignedKaryawan = User::where('assigned_to_supervisor_id', auth()->id())
-        ->where('role', 'karyawan')
-        ->where('status_akun', 'aktif')
-        ->pluck('id');
-
+      // Supervisor: Show total karyawan only
       $stats = [
-        'total_karyawan_assigned' => $assignedKaryawan->count(),
-        'total_kriteria' => SistemKriteria::where('level', 1)
-          ->where('is_active', true)
-          ->where(function ($query) {
-            $query->where('assigned_to_supervisor_id', auth()->id())
-              ->orWhere('divisi_filter', auth()->user()->divisi);
-          })
+        'total_karyawan' => User::where('role', 'karyawan')
+          ->where('status_akun', 'aktif')
           ->count(),
-        'total_penilaian_bulan_ini' => Penilaian::where('bulan', $currentMonth)
-          ->where('tahun', $currentYear)
-          ->whereIn('id_karyawan', $assignedKaryawan)
-          ->where('dinilai_oleh_supervisor_id', auth()->id())
-          ->distinct('id_karyawan')
-          ->count('id_karyawan'),
-        'ranking_generated' => HasilTopsis::where('bulan', $currentMonth)
-          ->where('tahun', $currentYear)
-          ->exists(),
       ];
     } else {
       // Karyawan: Show personal stats
