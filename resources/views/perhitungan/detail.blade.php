@@ -109,15 +109,51 @@
     @php
         $kriteriaColors = [
             'benefit' => [
-                0 => ['bg' => 'bg-green-50', 'border' => 'border-green-200', 'icon' => 'bg-green-500', 'text' => 'text-green-700', 'badge' => 'bg-green-100 text-green-800'],
-                1 => ['bg' => 'bg-blue-50', 'border' => 'border-blue-200', 'icon' => 'bg-blue-500', 'text' => 'text-blue-700', 'badge' => 'bg-blue-100 text-blue-800'],
-                2 => ['bg' => 'bg-purple-50', 'border' => 'border-purple-200', 'icon' => 'bg-purple-500', 'text' => 'text-purple-700', 'badge' => 'bg-purple-100 text-purple-800'],
-                3 => ['bg' => 'bg-indigo-50', 'border' => 'border-indigo-200', 'icon' => 'bg-indigo-500', 'text' => 'text-indigo-700', 'badge' => 'bg-indigo-100 text-indigo-800'],
+                0 => [
+                    'bg' => 'bg-green-50',
+                    'border' => 'border-green-200',
+                    'icon' => 'bg-green-500',
+                    'text' => 'text-green-700',
+                    'badge' => 'bg-green-100 text-green-800',
+                ],
+                1 => [
+                    'bg' => 'bg-blue-50',
+                    'border' => 'border-blue-200',
+                    'icon' => 'bg-blue-500',
+                    'text' => 'text-blue-700',
+                    'badge' => 'bg-blue-100 text-blue-800',
+                ],
+                2 => [
+                    'bg' => 'bg-purple-50',
+                    'border' => 'border-purple-200',
+                    'icon' => 'bg-purple-500',
+                    'text' => 'text-purple-700',
+                    'badge' => 'bg-purple-100 text-purple-800',
+                ],
+                3 => [
+                    'bg' => 'bg-indigo-50',
+                    'border' => 'border-indigo-200',
+                    'icon' => 'bg-indigo-500',
+                    'text' => 'text-indigo-700',
+                    'badge' => 'bg-indigo-100 text-indigo-800',
+                ],
             ],
             'cost' => [
-                0 => ['bg' => 'bg-yellow-50', 'border' => 'border-yellow-200', 'icon' => 'bg-yellow-500', 'text' => 'text-yellow-700', 'badge' => 'bg-yellow-100 text-yellow-800'],
-                1 => ['bg' => 'bg-orange-50', 'border' => 'border-orange-200', 'icon' => 'bg-orange-500', 'text' => 'text-orange-700', 'badge' => 'bg-orange-100 text-orange-800'],
-            ]
+                0 => [
+                    'bg' => 'bg-yellow-50',
+                    'border' => 'border-yellow-200',
+                    'icon' => 'bg-yellow-500',
+                    'text' => 'text-yellow-700',
+                    'badge' => 'bg-yellow-100 text-yellow-800',
+                ],
+                1 => [
+                    'bg' => 'bg-orange-50',
+                    'border' => 'border-orange-200',
+                    'icon' => 'bg-orange-500',
+                    'text' => 'text-orange-700',
+                    'badge' => 'bg-orange-100 text-orange-800',
+                ],
+            ],
         ];
         $benefitIndex = 0;
         $costIndex = 0;
@@ -229,7 +265,8 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
                                                 </svg>
-                                                Input Angka ({{ $kriteria->nilai_min ?? 0 }}-{{ $kriteria->nilai_max ?? 100 }})
+                                                Input Angka
+                                                ({{ $kriteria->nilai_min ?? 0 }}-{{ $kriteria->nilai_max ?? 100 }})
                                             </span>
                                         @elseif($kriteria->tipe_input === 'rating')
                                             <span class="inline-flex items-center">
@@ -275,6 +312,10 @@
                                     </th>
                                     <th scope="col"
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                                        Tipe Sub-Kriteria
+                                    </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                                         Bobot (%)
                                     </th>
                                     <th scope="col"
@@ -283,7 +324,7 @@
                                     </th>
                                     <th scope="col"
                                         class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                                        Tipe
+                                        Tipe Input
                                     </th>
                                     <th scope="col"
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
@@ -303,6 +344,29 @@
                                                 <p class="text-xs text-gray-500 mt-1">{{ $subKriteria->deskripsi }}</p>
                                             @endif
                                         </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm">
+                                            @if ($subKriteria->tipe_kriteria === 'benefit')
+                                                <span
+                                                    class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Benefit
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Cost
+                                                </span>
+                                            @endif
+                                        </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
                                             {{ $subKriteria->bobot }}%
                                         </td>
@@ -318,9 +382,11 @@
                                                     <svg class="w-4 h-4 mr-1 text-gray-400" fill="none"
                                                         stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                                                            stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14">
+                                                        </path>
                                                     </svg>
-                                                    Input Angka ({{ $subKriteria->nilai_min ?? 0 }}-{{ $subKriteria->nilai_max ?? 100 }})
+                                                    Input Angka
+                                                    ({{ $subKriteria->nilai_min ?? 0 }}-{{ $subKriteria->nilai_max ?? 100 }})
                                                 </span>
                                             @elseif($subKriteria->tipe_input === 'rating')
                                                 <span class="inline-flex items-center">
@@ -409,7 +475,8 @@
             </div>
 
             {{-- Ranking Info --}}
-            <div class="mt-6 text-center p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+            <div
+                class="mt-6 text-center p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
                 <p class="text-sm text-gray-700">
                     Dengan skor <span class="font-bold text-blue-700">{{ number_format($hasil->skor_topsis, 4) }}</span>,
                     <span class="font-bold">{{ $hasil->karyawan->nama }}</span>
