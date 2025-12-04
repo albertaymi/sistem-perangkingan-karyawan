@@ -9,7 +9,7 @@
             Selamat Datang, {{ auth()->user()->nama }}!
         </h1>
         <p class="text-gray-600">
-            Sistem Penilaian Karyawan dengan Algoritma TOPSIS
+            Sistem Perangkingan Karyawan dengan Algoritma TOPSIS
         </p>
     </div>
 
