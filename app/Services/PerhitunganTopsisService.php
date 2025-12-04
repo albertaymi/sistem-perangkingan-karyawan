@@ -73,8 +73,9 @@ class PerhitunganTopsisService
                         // Benefit: Skor_benefit = (rating / rating_max) × 100
                         $nilaiStandar[$idKaryawan] = ($nilai / $ratingMaks) * 100;
                     } else {
-                        // Cost: Skor_cost = ((rating_max - rating + 1) / rating_max) × 100
-                        $nilaiStandar[$idKaryawan] = (($ratingMaks - $nilai + 1) / $ratingMaks) * 100;
+                        // Cost: Skor_cost = 100 - ((rating / rating_max) × 100)
+                        // Sesuai Formula 3.4 dari skripsi
+                        $nilaiStandar[$idKaryawan] = 100 - (($nilai / $ratingMaks) * 100);
                     }
                     break;
 
@@ -203,13 +204,11 @@ class PerhitunganTopsisService
                     }
 
                     // Standardisasi untuk sub-kriteria ini
-                    // Gunakan tipe_kriteria dari sub-kriteria jika ada, kalau tidak ada gunakan dari parent
-                    $tipeKriteriaToUse = $sub->tipe_kriteria ?? $kriteria->tipe_kriteria;
-
+                    // Sub-kriteria WAJIB memiliki tipe_kriteria sendiri (benefit/cost)
                     $nilaiSubKriteria[$sub->id] = $this->standardisasiNilai(
                         $nilaiMentah,
                         $sub->tipe_input,
-                        $tipeKriteriaToUse,
+                        $sub->tipe_kriteria, // Gunakan langsung tipe_kriteria dari sub-kriteria
                         $sub->nilai_min,
                         $sub->nilai_max
                     );

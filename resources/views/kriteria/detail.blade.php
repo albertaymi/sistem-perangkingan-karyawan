@@ -242,6 +242,10 @@
                         </th>
                         <th scope="col"
                             class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Tipe Sub-Kriteria
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Tipe Input
                         </th>
                         <th scope="col"
@@ -275,6 +279,29 @@
                                 <div class="text-sm text-gray-600 max-w-xs truncate" title="{{ $item->deskripsi }}">
                                     {{ $item->deskripsi ?? '-' }}
                                 </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if ($item->tipe_kriteria === 'benefit')
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                        Benefit
+                                    </span>
+                                @else
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                        Cost
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($item->tipe_input === 'angka')
@@ -487,6 +514,24 @@
                             placeholder="Deskripsi sub-kriteria (opsional)"></textarea>
                     </div>
 
+                    {{-- Tipe Sub-Kriteria --}}
+                    <div>
+                        <label for="tipe_kriteria_tambah" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tipe Sub-Kriteria <span class="text-red-500">*</span>
+                        </label>
+                        <select name="tipe_kriteria" id="tipe_kriteria_tambah" required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                            <option value="">Pilih Tipe Sub-Kriteria</option>
+                            <option value="benefit">Benefit (Semakin tinggi semakin baik)</option>
+                            <option value="cost">Cost (Semakin rendah semakin baik)</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            <strong>Benefit:</strong> Nilai lebih tinggi lebih diinginkan (misal: Produktivitas,
+                            Kehadiran)<br>
+                            <strong>Cost:</strong> Nilai lebih rendah lebih diinginkan (misal: Keterlambatan, Absensi)
+                        </p>
+                    </div>
+
                     {{-- Tipe Input --}}
                     <div>
                         <label for="tipe_input_tambah" class="block text-sm font-medium text-gray-700 mb-2">
@@ -641,6 +686,24 @@
                         </label>
                         <textarea name="deskripsi" id="deskripsi_edit" rows="2"
                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"></textarea>
+                    </div>
+
+                    {{-- Tipe Sub-Kriteria --}}
+                    <div>
+                        <label for="tipe_kriteria_edit" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tipe Sub-Kriteria <span class="text-red-500">*</span>
+                        </label>
+                        <select name="tipe_kriteria" id="tipe_kriteria_edit" required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">Pilih Tipe Sub-Kriteria</option>
+                            <option value="benefit">Benefit (Semakin tinggi semakin baik)</option>
+                            <option value="cost">Cost (Semakin rendah semakin baik)</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            <strong>Benefit:</strong> Nilai lebih tinggi lebih diinginkan (misal: Produktivitas,
+                            Kehadiran)<br>
+                            <strong>Cost:</strong> Nilai lebih rendah lebih diinginkan (misal: Keterlambatan, Absensi)
+                        </p>
                     </div>
 
                     {{-- Tipe Input --}}
@@ -1326,6 +1389,7 @@
                         document.getElementById('sub_kriteria_id_edit').value = subKriteria.id;
                         document.getElementById('nama_kriteria_edit').value = subKriteria.nama_kriteria;
                         document.getElementById('deskripsi_edit').value = subKriteria.deskripsi || '';
+                        document.getElementById('tipe_kriteria_edit').value = subKriteria.tipe_kriteria;
                         document.getElementById('tipe_input_edit').value = subKriteria.tipe_input;
                         document.getElementById('bobot_edit').value = Math.round(subKriteria.bobot);
 

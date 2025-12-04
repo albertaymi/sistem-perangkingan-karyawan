@@ -115,7 +115,7 @@ class SubKriteriaController extends Controller
             'id_parent' => $kriteriaId,
             'nama_kriteria' => $request->nama_kriteria,
             'deskripsi' => $request->deskripsi,
-            'tipe_kriteria' => null, // Sub-kriteria tidak punya tipe_kriteria
+            'tipe_kriteria' => $request->tipe_kriteria, // Sub-kriteria memiliki tipe_kriteria sendiri
             'bobot' => $request->bobot,
             'tipe_input' => $request->tipe_input,
             'nilai_min' => $request->tipe_input !== 'dropdown' ? $request->nilai_min : null,
@@ -172,6 +172,7 @@ class SubKriteriaController extends Controller
                 'id' => $subKriteria->id,
                 'nama_kriteria' => $subKriteria->nama_kriteria,
                 'deskripsi' => $subKriteria->deskripsi,
+                'tipe_kriteria' => $subKriteria->tipe_kriteria,
                 'bobot' => $subKriteria->bobot,
                 'tipe_input' => $subKriteria->tipe_input,
                 'nilai_min' => $subKriteria->nilai_min,
@@ -288,6 +289,7 @@ class SubKriteriaController extends Controller
         $subKriteria->update([
             'nama_kriteria' => $request->nama_kriteria,
             'deskripsi' => $request->deskripsi,
+            'tipe_kriteria' => $request->tipe_kriteria,
             'bobot' => $request->bobot,
             'tipe_input' => $request->tipe_input,
             'nilai_min' => $request->tipe_input !== 'dropdown' ? $request->nilai_min : null,
