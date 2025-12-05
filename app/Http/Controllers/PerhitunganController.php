@@ -968,7 +968,7 @@ class PerhitunganController extends Controller
             $kriteriaScores[] = [
                 'nama' => $k->nama_kriteria,
                 'bobot' => number_format($k->bobot, 0),
-                'tipe' => $k->jenis_kriteria === 'benefit' ? 'Benefit' : 'Cost',
+                'tipe' => $k->tipe_kriteria === 'benefit' ? 'Benefit' : 'Cost',
                 'nilai' => number_format($detailPerhitungan['decision_matrix'][$k->nama_kriteria] ?? 0, 0),
             ];
         }

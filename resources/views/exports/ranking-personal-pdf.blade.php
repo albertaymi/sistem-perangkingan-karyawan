@@ -276,6 +276,7 @@
                             'bobot' => $subKriteria->bobot,
                             'nilai' => $penilaian->nilai,
                             'tipe_input' => $subKriteria->tipe_input,
+                            'tipe_kriteria' => $subKriteria->tipe_kriteria,
                             'nilai_min' => $subKriteria->nilai_min,
                             'nilai_max' => $subKriteria->nilai_max,
                         ];
@@ -296,6 +297,7 @@
                         'bobot' => $kriteria->bobot,
                         'nilai' => $penilaian->nilai,
                         'tipe_input' => $kriteria->tipe_input,
+                        'tipe_kriteria' => $kriteria->tipe_kriteria,
                         'nilai_min' => $kriteria->nilai_min,
                         'nilai_max' => $kriteria->nilai_max,
                     ];
@@ -315,7 +317,7 @@
     @foreach ($kriteriaWithPenilaian as $data)
         @php
             $kriteria = $data['kriteria'];
-            $isBenefit = $kriteria->jenis_kriteria === 'benefit';
+            $isBenefit = $kriteria->tipe_kriteria === 'benefit';
             $bgColor = $isBenefit ? '#ecfdf5' : '#fef2f2';
             $borderColor = $isBenefit ? '#10b981' : '#ef4444';
             $textColor = $isBenefit ? '#059669' : '#dc2626';
@@ -324,25 +326,37 @@
         <div class="card" style="border-left: 4px solid {{ $borderColor }}; background: {{ $bgColor }};">
             <h3 style="color: {{ $textColor }}; margin-bottom: 15px; font-size: 12px; font-weight: bold;">
                 {{ $kriteria->nama_kriteria }}
-                ({{ $isBenefit ? 'Benefit ↑' : 'Cost ↓' }})
+                ({{ $isBenefit ? 'Benefit +' : 'Cost -' }})
                 - Bobot: {{ $kriteria->bobot }}%
             </h3>
 
             <table class="table" style="margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="text-align: left; width: 35%;">
+                        <th style="text-align: left; width: 30%;">
                             {{ $data['hasSubKriteria'] ? 'Sub-Kriteria' : 'Kriteria' }}
                         </th>
-                        <th style="text-align: center; width: 15%;">Bobot (%)</th>
-                        <th style="text-align: left; width: 30%;">Tipe Input</th>
+                        <th style="text-align: center; width: 12%;">Tipe</th>
+                        <th style="text-align: center; width: 12%;">Bobot (%)</th>
+                        <th style="text-align: left; width: 26%;">Tipe Input</th>
                         <th style="text-align: center; width: 20%;">Skor</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($data['items'] as $item)
+                        @php
+                            $itemIsBenefit = ($item['tipe_kriteria'] ?? 'benefit') === 'benefit';
+                            $itemBadgeColor = $itemIsBenefit ? '#059669' : '#dc2626';
+                            $itemBadgeBg = $itemIsBenefit ? '#d1fae5' : '#fee2e2';
+                        @endphp
                         <tr>
                             <td style="font-weight: 600;">{{ $item['nama'] }}</td>
+                            <td style="text-align: center;">
+                                <span
+                                    style="display: inline-block; padding: 2px 6px; font-size: 8px; font-weight: 600; border-radius: 4px; background: {{ $itemBadgeBg }}; color: {{ $itemBadgeColor }};">
+                                    {{ $itemIsBenefit ? 'Benefit +' : 'Cost -' }}
+                                </span>
+                            </td>
                             <td style="text-align: center;">{{ $item['bobot'] }}%</td>
                             <td style="font-size: 10px;">
                                 @if ($item['tipe_input'] === 'angka')
@@ -363,7 +377,7 @@
 
                     @if ($data['hasSubKriteria'])
                         <tr style="background: #f9fafb; font-weight: bold;">
-                            <td colspan="3" style="text-align: left;">
+                            <td colspan="4" style="text-align: left;">
                                 Total Skor {{ $kriteria->nama_kriteria }}
                             </td>
                             <td style="text-align: center; font-size: 14px; color: {{ $textColor }};">
