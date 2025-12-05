@@ -550,16 +550,15 @@ class PerhitunganController extends Controller
             if (!isset($penilaianByKriteria[$kriteriaId])) {
                 $penilaianByKriteria[$kriteriaId] = [
                     'items' => [],
-                    'catatan' => $penilaian->catatan,
                     'total' => 0,
                 ];
             }
 
             if ($subKriteriaId) {
-                // Multi sub-kriteria
+                // Multi sub-kriteria - setiap sub-kriteria punya catatan sendiri
                 $penilaianByKriteria[$kriteriaId]['items'][$subKriteriaId] = $penilaian;
             } else {
-                // Single kriteria
+                // Single kriteria (tidak ada sub-kriteria)
                 $penilaianByKriteria[$kriteriaId]['items']['single'] = $penilaian;
             }
         }

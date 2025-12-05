@@ -241,6 +241,10 @@
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                                         Skor
                                     </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
+                                        Catatan
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -296,6 +300,15 @@
                                             {{ $penilaianItem ? number_format($penilaianItem->nilai, 0) : '-' }}
                                         </span>
                                     </td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">
+                                        @if ($penilaianItem && $penilaianItem->catatan)
+                                            <div class="bg-yellow-50 border-l-4 border-yellow-400 px-3 py-2 rounded">
+                                                <p class="text-xs text-gray-700">{{ $penilaianItem->catatan }}</p>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400 text-xs italic">Tidak ada catatan</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -329,6 +342,10 @@
                                     <th scope="col"
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                                         Skor
+                                    </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
+                                        Catatan
                                     </th>
                                 </tr>
                             </thead>
@@ -416,12 +433,21 @@
                                                 {{ $penilaianItem ? number_format($penilaianItem->nilai, 0) : '-' }}
                                             </span>
                                         </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">
+                                            @if ($penilaianItem && $penilaianItem->catatan)
+                                                <div class="bg-yellow-50 border-l-4 border-yellow-400 px-3 py-2 rounded">
+                                                    <p class="text-xs text-gray-700">{{ $penilaianItem->catatan }}</p>
+                                                </div>
+                                            @else
+                                                <span class="text-gray-400 text-xs italic">Tidak ada catatan</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
 
                                 {{-- Total Row --}}
                                 <tr class="{{ $colors['bg'] }} font-semibold">
-                                    <td class="px-4 py-3 text-sm text-gray-900" colspan="4">
+                                    <td class="px-4 py-3 text-sm text-gray-900" colspan="6">
                                         Total Skor {{ $kriteria->nama_kriteria }}
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-center">
@@ -432,14 +458,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                @endif
-
-                {{-- Catatan Penilaian --}}
-                @if ($penilaianKriteria && !empty($penilaianKriteria['catatan']))
-                    <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Catatan Penilaian:</h4>
-                        <p class="text-sm text-gray-600">{{ $penilaianKriteria['catatan'] }}</p>
                     </div>
                 @endif
             </div>
