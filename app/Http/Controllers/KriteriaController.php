@@ -181,10 +181,10 @@ class KriteriaController extends Controller
     {
         $kriteria = SistemKriteria::where('level', 1)->findOrFail($id);
 
-        // Get all sub-kriteria for this kriteria
+        // Get all sub-kriteria for this kriteria (newest first)
         $subKriteria = SistemKriteria::where('id_parent', $kriteria->id)
             ->where('level', 2)
-            ->orderBy('urutan', 'asc')
+            ->latest()
             ->get();
 
         // Hitung total bobot sub-kriteria
