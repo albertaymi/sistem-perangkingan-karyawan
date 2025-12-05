@@ -561,7 +561,7 @@
                 </div>
 
                 {{-- Modal Body --}}
-                <form id="form-edit-kriteria" method="POST" class="p-6 space-y-4"
+                <form id="form-edit-kriteria" method="POST" action="" class="p-6 space-y-4"
                     onsubmit="return validateKriteriaForm('edit')">
                     @csrf
                     @method('PUT')
@@ -909,9 +909,11 @@
                         block: 'center'
                     });
                 }
+                console.log('Validation failed for mode:', mode);
                 return false;
             }
 
+            console.log('Validation passed for mode:', mode);
             return true;
         }
 
@@ -926,18 +928,28 @@
             const nilaiMin = document.getElementById(`nilai_min_${mode}`);
             const nilaiMax = document.getElementById(`nilai_max_${mode}`);
 
-            // Hide both sections first
+            // Hide both sections first and remove all required attributes
             rangeFields.classList.add('hidden');
             dropdownOptions.classList.add('hidden');
+            nilaiMin.required = false;
+            nilaiMax.required = false;
+
+            // Remove required from all dropdown option fields
+            const dropdownInputs = dropdownOptions.querySelectorAll('input[required]');
+            dropdownInputs.forEach(input => {
+                input.required = false;
+            });
 
             if (tipeInput === 'angka' || tipeInput === 'rating') {
                 rangeFields.classList.remove('hidden');
                 nilaiMin.required = true;
                 nilaiMax.required = true;
 
-                // Clear values - let user define the range
-                nilaiMin.value = '';
-                nilaiMax.value = '';
+                // Only clear values for 'tambah' mode, not 'edit'
+                if (mode === 'tambah') {
+                    nilaiMin.value = '';
+                    nilaiMax.value = '';
+                }
 
                 // Add placeholder hints
                 if (tipeInput === 'rating') {
@@ -949,10 +961,18 @@
                 }
             } else if (tipeInput === 'dropdown') {
                 dropdownOptions.classList.remove('hidden');
-                nilaiMin.required = false;
-                nilaiMax.required = false;
-                nilaiMin.value = '';
-                nilaiMax.value = '';
+
+                // Set required for dropdown option fields
+                const dropdownInputs = dropdownOptions.querySelectorAll('input');
+                dropdownInputs.forEach(input => {
+                    input.required = true;
+                });
+
+                // Only clear for 'tambah' mode
+                if (mode === 'tambah') {
+                    nilaiMin.value = '';
+                    nilaiMax.value = '';
+                }
 
                 // Initialize with 2 empty options for tambah mode
                 const container = document.getElementById(`options_container_${mode}`);
@@ -961,10 +981,11 @@
                     addDropdownOption(mode);
                 }
             } else {
-                nilaiMin.required = false;
-                nilaiMax.required = false;
-                nilaiMin.value = '';
-                nilaiMax.value = '';
+                // Only clear for 'tambah' mode
+                if (mode === 'tambah') {
+                    nilaiMin.value = '';
+                    nilaiMax.value = '';
+                }
             }
         }
 
@@ -1077,17 +1098,17 @@
                             .assigned_to_supervisor_id || '';
                         document.getElementById('tipe_input_edit').value = kriteria.tipe_input || '';
 
-                        // Clear dropdown options container first
-                        clearDropdownOptions('edit');
-
-                        // Toggle range fields visibility based on tipe_input FIRST
-                        toggleKriteriaRangeFields('edit');
-
-                        // THEN populate nilai_min and nilai_max AFTER toggle (to prevent clearing)
+                        // Set nilai_min and nilai_max BEFORE toggle (to prevent clearing)
                         document.getElementById('nilai_min_edit').value = kriteria.nilai_min !== null ? kriteria
                             .nilai_min : '';
                         document.getElementById('nilai_max_edit').value = kriteria.nilai_max !== null ? kriteria
                             .nilai_max : '';
+
+                        // Clear dropdown options container first
+                        clearDropdownOptions('edit');
+
+                        // Toggle range fields visibility based on tipe_input
+                        toggleKriteriaRangeFields('edit');
 
                         // Load existing dropdown options if tipe_input is dropdown
                         if (kriteria.tipe_input === 'dropdown' && kriteria.dropdown_options && kriteria.dropdown_options
@@ -1142,7 +1163,9 @@
                         }
 
                         // Update form action
-                        document.getElementById('form-edit-kriteria').action = `/kriteria/${kriteria.id}`;
+                        const formEdit = document.getElementById('form-edit-kriteria');
+                        formEdit.action = `/kriteria/${kriteria.id}`;
+                        console.log('Form action set to:', formEdit.action);
 
                         // Get sisa bobot (exclude kriteria yang sedang diedit)
                         fetch(`/kriteria/total-bobot?exclude_id=${kriteria.id}`)
