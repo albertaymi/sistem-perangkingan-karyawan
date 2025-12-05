@@ -355,8 +355,28 @@ class SubKriteriaController extends Controller
                 ->with('error', 'Tidak dapat menghapus sub-kriteria karena masih memiliki ' . $countOptions . ' dropdown options. Hapus dropdown options terlebih dahulu.');
         }
 
-        // Cek apakah sub-kriteria sudah digunakan di penilaian
-        $countPenilaian = $subKriteria->penilaianAsSub()->count();
+        // Cek apakah sub-kriteria sudah digunakan di penilaian (yang tidak soft deleted)
+        $penilaianQuery = $subKriteria->penilaianAsSub();
+        $countPenilaian = $penilaianQuery->count();
+
+        // Debug: Log penilaian yang ditemukan
+        \Log::info('Checking penilaian for sub-kriteria', [
+            'sub_kriteria_id' => $id,
+            'sub_kriteria_nama' => $subKriteria->nama_kriteria,
+            'count_penilaian' => $countPenilaian,
+            'penilaian_details' => $penilaianQuery->get()->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'id_karyawan' => $p->id_karyawan,
+                    'id_kriteria' => $p->id_kriteria,
+                    'id_sub_kriteria' => $p->id_sub_kriteria,
+                    'bulan' => $p->bulan,
+                    'tahun' => $p->tahun,
+                    'deleted_at' => $p->deleted_at,
+                ];
+            })->toArray(),
+        ]);
+
         if ($countPenilaian > 0) {
             return redirect()->route('kriteria.detail', $kriteriaId)
                 ->with('error', 'Tidak dapat menghapus sub-kriteria karena sudah digunakan dalam ' . $countPenilaian . ' penilaian.');
