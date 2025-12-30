@@ -50,8 +50,8 @@ class DashboardController extends Controller
       // Karyawan: Show personal stats
       // Get all ranking history for this karyawan (all months & divisions)
       $rankingHistory = HasilTopsis::where('id_karyawan', auth()->id())
+        ->orderBy('tanggal_generate', 'desc') // Prioritas: yang paling baru di-generate
         ->orderByRaw('tahun DESC, bulan DESC')
-        ->orderBy('divisi_filter', 'asc')
         ->get()
         ->map(function ($hasil) {
           // Get total karyawan for this periode & divisi
