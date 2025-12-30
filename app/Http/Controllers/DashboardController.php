@@ -48,25 +48,50 @@ class DashboardController extends Controller
       ];
     } else {
       // Karyawan: Show personal stats
+      // Get all ranking history for this karyawan (all months & divisions)
+      $rankingHistory = HasilTopsis::where('id_karyawan', auth()->id())
+        ->orderByRaw('tahun DESC, bulan DESC')
+        ->orderBy('divisi_filter', 'asc')
+        ->get()
+        ->map(function ($hasil) {
+          // Get total karyawan for this periode & divisi
+          $totalQuery = HasilTopsis::where('bulan', $hasil->bulan)
+            ->where('tahun', $hasil->tahun);
+
+          if ($hasil->divisi_filter) {
+            $totalQuery->where('divisi_filter', $hasil->divisi_filter);
+          } else {
+            $totalQuery->whereNull('divisi_filter');
+          }
+
+          $totalKaryawan = $totalQuery->count();
+
+          return [
+            'bulan' => $hasil->bulan,
+            'tahun' => $hasil->tahun,
+            'periode_label' => $hasil->periode_label,
+            'divisi_label' => $hasil->divisi_filter ?? 'Semua Divisi',
+            'ranking' => $hasil->ranking,
+            'skor_topsis' => $hasil->skor_topsis,
+            'total_karyawan' => $totalKaryawan,
+            'tanggal_generate' => $hasil->tanggal_generate,
+          ];
+        });
+
+      // Get latest ranking (most recent periode, prioritize "Semua Divisi")
+      $latestRanking = $rankingHistory->first();
+
       $stats = [
         'total_penilaian_saya' => Penilaian::where('id_karyawan', auth()->id())
           ->where('bulan', $currentMonth)
           ->where('tahun', $currentYear)
           ->count(),
-        'ranking_saya' => HasilTopsis::where('id_karyawan', auth()->id())
-          ->where('bulan', $currentMonth)
-          ->where('tahun', $currentYear)
-          ->whereNull('divisi_filter')
-          ->value('ranking'),
-        'skor_topsis_saya' => HasilTopsis::where('id_karyawan', auth()->id())
-          ->where('bulan', $currentMonth)
-          ->where('tahun', $currentYear)
-          ->whereNull('divisi_filter')
-          ->value('skor_topsis'),
-        'total_karyawan_periode_ini' => HasilTopsis::where('bulan', $currentMonth)
-          ->where('tahun', $currentYear)
-          ->whereNull('divisi_filter')
-          ->count(),
+        'ranking_saya' => $latestRanking['ranking'] ?? null,
+        'skor_topsis_saya' => $latestRanking['skor_topsis'] ?? null,
+        'total_karyawan_periode_ini' => $latestRanking['total_karyawan'] ?? 0,
+        'latest_periode_label' => $latestRanking['periode_label'] ?? null,
+        'latest_divisi_label' => $latestRanking['divisi_label'] ?? null,
+        'ranking_history' => $rankingHistory,
       ];
     }
 
