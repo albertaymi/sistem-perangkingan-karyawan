@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class RankingExport implements
     FromCollection,
@@ -169,6 +170,11 @@ class RankingExport implements
 
                 // Center align rank column
                 $sheet->getStyle('A2:A' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                // Format NIK column as TEXT to prevent scientific notation
+                $sheet->getStyle('B2:B' . $highestRow)
+                    ->getNumberFormat()
+                    ->setFormatCode(NumberFormat::FORMAT_TEXT);
 
                 // Center align skor columns
                 $sheet->getStyle('F2:I' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
