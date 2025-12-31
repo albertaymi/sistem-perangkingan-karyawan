@@ -10,12 +10,15 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 class RankingExport implements
     FromCollection,
@@ -24,7 +27,8 @@ class RankingExport implements
     WithStyles,
     WithTitle,
     ShouldAutoSize,
-    WithEvents
+    WithEvents,
+    WithColumnFormatting
 {
     protected $bulan;
     protected $tahun;
@@ -101,7 +105,7 @@ class RankingExport implements
     {
         return [
             $hasil->ranking,
-            $hasil->karyawan->nik,
+            "\t" . $hasil->karyawan->nik, // Tab prefix memaksa Excel treat sebagai text tanpa tampil
             $hasil->karyawan->nama,
             $hasil->karyawan->divisi,
             $hasil->karyawan->jabatan,
@@ -110,6 +114,17 @@ class RankingExport implements
             number_format($hasil->jarak_ideal_positif, 6),
             number_format($hasil->jarak_ideal_negatif, 6),
             $hasil->tanggal_generate->format('d/m/Y H:i'),
+        ];
+    }
+
+    /**
+     * Set format kolom SEBELUM data dimasukkan
+     * @return array
+     */
+    public function columnFormats(): array
+    {
+        return [
+            'B' => NumberFormat::FORMAT_TEXT, // NIK sebagai text
         ];
     }
 
