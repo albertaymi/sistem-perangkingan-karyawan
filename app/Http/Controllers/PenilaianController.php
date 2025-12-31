@@ -408,6 +408,39 @@ class PenilaianController extends Controller
                 ->get()
                 ->keyBy('id');
 
+            // Custom validation: Presensi - Kehadiran + Alpha <= Total Hari Kerja (Dynamic dari Database)
+            $presensiData = [];
+            $totalHariKerja = null;
+
+            foreach ($request->penilaian as $index => $data) {
+                $subKriteria = $subKriteriaData->get($data['id_sub_kriteria']);
+
+                if ($subKriteria) {
+                    // Store presensi sub-kriteria values
+                    $namaLower = strtolower($subKriteria->nama_kriteria);
+                    if (str_contains($namaLower, 'kehadiran')) {
+                        $presensiData['kehadiran'] = $data['nilai'];
+                        // Ambil nilai_max dari Kehadiran sebagai total hari kerja
+                        $totalHariKerja = $subKriteria->nilai_max;
+                    } elseif (str_contains($namaLower, 'alpha') || str_contains($namaLower, 'tanpa keterangan')) {
+                        $presensiData['alpha'] = $data['nilai'];
+                    }
+                }
+            }
+
+            // Validasi Presensi: Total Kehadiran + Alpha tidak boleh lebih dari total hari kerja
+            if (isset($presensiData['kehadiran']) && isset($presensiData['alpha']) && $totalHariKerja) {
+                $totalPresensi = $presensiData['kehadiran'] + $presensiData['alpha'];
+
+                if ($totalPresensi > $totalHariKerja) {
+                    DB::rollBack();
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Validasi Presensi Gagal: Total Kehadiran ({$presensiData['kehadiran']}) + Alpha ({$presensiData['alpha']}) = {$totalPresensi} hari, tidak boleh lebih dari {$totalHariKerja} hari kerja dalam sebulan.");
+                }
+            }
+
+            // Standard validation: Check nilai against sub-kriteria range
             foreach ($request->penilaian as $index => $data) {
                 $subKriteria = $subKriteriaData->get($data['id_sub_kriteria']);
 

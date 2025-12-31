@@ -249,7 +249,7 @@
                                 {{-- Dynamic Input Based on Tipe Input --}}
                                 @if ($kriteriaItem->tipe_input === 'angka')
                                     {{-- Input Angka --}}
-                                    <div>
+                                    <div class="input-wrapper">
                                         <input type="number" name="penilaian[{{ $kriteriaIndex }}_0][nilai]"
                                             id="nilai_{{ $kriteriaItem->id }}_{{ $kriteriaItem->id }}"
                                             min="{{ $kriteriaItem->nilai_min }}" max="{{ $kriteriaItem->nilai_max }}"
@@ -258,6 +258,7 @@
                                             required
                                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                             placeholder="Masukkan nilai ({{ $kriteriaItem->nilai_min }} - {{ $kriteriaItem->nilai_max }})">
+                                        <span class="validation-error text-xs text-red-600 mt-1 hidden"></span>
                                         <p class="mt-1 text-xs text-gray-500">
                                             Range: {{ $kriteriaItem->nilai_min }} - {{ $kriteriaItem->nilai_max }}
                                         </p>
@@ -373,7 +374,7 @@
                                     {{-- Dynamic Input Based on Tipe Input --}}
                                     @if ($subItem->tipe_input === 'angka')
                                         {{-- Input Angka --}}
-                                        <div>
+                                        <div class="input-wrapper">
                                             <input type="number"
                                                 name="penilaian[{{ $kriteriaIndex }}_{{ $subIndex }}][nilai]"
                                                 id="nilai_{{ $kriteriaItem->id }}_{{ $subItem->id }}"
@@ -382,7 +383,10 @@
                                                 value="{{ $existingPenilaian->has($subItem->id) ? (int) $existingPenilaian->get($subItem->id)->nilai : '' }}"
                                                 required
                                                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                                placeholder="Masukkan nilai ({{ $subItem->nilai_min }} - {{ $subItem->nilai_max }})">
+                                                placeholder="Masukkan nilai ({{ $subItem->nilai_min }} - {{ $subItem->nilai_max }})"
+                                                data-subkriteria-name="{{ strtolower($subItem->nama_kriteria) }}"
+                                                data-nilai-max="{{ $subItem->nilai_max }}">
+                                            <span class="validation-error text-xs text-red-600 mt-1 hidden"></span>
                                             <p class="mt-1 text-xs text-gray-500">
                                                 Range: {{ $subItem->nilai_min }} - {{ $subItem->nilai_max }}
                                             </p>
@@ -641,48 +645,175 @@
         document.addEventListener('DOMContentLoaded', function() {
             const numberInputs = document.querySelectorAll('input[type="number"][min][max]');
 
+            // Store debounce timers per input
+            const debounceTimers = new Map();
+
             numberInputs.forEach(input => {
-                // Add inline error element if not exists
-                if (!input.nextElementSibling || !input.nextElementSibling.classList.contains(
-                        'inline-error')) {
-                    const errorSpan = document.createElement('span');
-                    errorSpan.className = 'inline-error text-xs text-red-600 mt-1 hidden';
-                    input.parentNode.insertBefore(errorSpan, input.nextSibling);
-                }
+                // Cari error span yang sudah ada di wrapper
+                const wrapper = input.closest('.input-wrapper');
+                const errorSpan = wrapper ? wrapper.querySelector('.validation-error') : null;
 
-                input.addEventListener('input', function() {
-                    const min = parseFloat(this.min);
-                    const max = parseFloat(this.max);
-                    const value = parseFloat(this.value);
-                    const errorSpan = this.nextElementSibling;
+                // Validasi range min/max
+                const validateRange = function() {
+                    const min = parseFloat(input.min);
+                    const max = parseFloat(input.max);
+                    const value = parseFloat(input.value);
 
-                    if (this.value && (value < min || value > max)) {
-                        this.classList.add('border-red-500', 'focus:ring-red-500',
+                    if (input.value && (value < min || value > max)) {
+                        input.classList.add('border-red-500', 'focus:ring-red-500',
                             'focus:border-red-500');
-                        this.classList.remove('border-gray-300', 'focus:ring-blue-500',
+                        input.classList.remove('border-gray-300', 'focus:ring-blue-500',
                             'focus:border-blue-500');
-                        if (errorSpan && errorSpan.classList.contains('inline-error')) {
+
+                        if (errorSpan) {
                             errorSpan.textContent = `Nilai harus antara ${min} dan ${max}`;
                             errorSpan.classList.remove('hidden');
                         }
-                        this.setCustomValidity(`Nilai harus antara ${min} dan ${max}`);
+                        input.setCustomValidity(`Nilai harus antara ${min} dan ${max}`);
                     } else {
-                        this.classList.remove('border-red-500', 'focus:ring-red-500',
+                        input.classList.remove('border-red-500', 'focus:ring-red-500',
                             'focus:border-red-500');
-                        this.classList.add('border-gray-300', 'focus:ring-blue-500',
+                        input.classList.add('border-gray-300', 'focus:ring-blue-500',
                             'focus:border-blue-500');
-                        if (errorSpan && errorSpan.classList.contains('inline-error')) {
+
+                        if (errorSpan) {
                             errorSpan.classList.add('hidden');
                         }
-                        this.setCustomValidity('');
+                        input.setCustomValidity('');
+                    }
+                };
+
+                // Event handler dengan debounce
+                input.addEventListener('input', function() {
+                    // Clear existing timer for this input
+                    if (debounceTimers.has(input)) {
+                        clearTimeout(debounceTimers.get(input));
+                    }
+
+                    // Validate range immediately (tidak delay)
+                    validateRange();
+
+                    // Debounce untuk validasi presensi (delay 300ms)
+                    const timer = setTimeout(() => {
+                        validatePresensi();
+                        debounceTimers.delete(input);
+                    }, 300);
+
+                    debounceTimers.set(input, timer);
+                });
+
+                // Validate on blur - langsung tanpa debounce
+                input.addEventListener('blur', function() {
+                    // Clear debounce timer
+                    if (debounceTimers.has(input)) {
+                        clearTimeout(debounceTimers.get(input));
+                        debounceTimers.delete(input);
+                    }
+
+                    // Run validation immediately
+                    validateRange();
+                    validatePresensi();
+                });
+            });
+
+            // VALIDASI KHUSUS: Kehadiran + Alpha ≤ Total Hari Kerja (Dynamic dari Database)
+            function validatePresensi() {
+                // Find Kehadiran and Alpha inputs by data attributes
+                const allInputs = document.querySelectorAll('input[type="number"][data-subkriteria-name]');
+                let kehadiranInput = null;
+                let alphaInput = null;
+                let totalHariKerja = null;
+
+                allInputs.forEach(input => {
+                    const name = input.getAttribute('data-subkriteria-name');
+                    if (name && name.includes('kehadiran')) {
+                        kehadiranInput = input;
+                        totalHariKerja = parseInt(input.getAttribute('data-nilai-max'));
+                    } else if (name && (name.includes('alpha') || name.includes('tanpa keterangan'))) {
+                        alphaInput = input;
                     }
                 });
 
-                // Validate on blur
-                input.addEventListener('blur', function() {
-                    this.dispatchEvent(new Event('input'));
+                // Validasi hanya jika kedua input ada dan memiliki nilai
+                if (!kehadiranInput || !alphaInput || !totalHariKerja || !kehadiranInput.value || !alphaInput
+                    .value) {
+                    return;
+                }
+
+                const kehadiran = parseFloat(kehadiranInput.value);
+                const alpha = parseFloat(alphaInput.value);
+                const total = kehadiran + alpha;
+
+                // Get error spans dari wrapper
+                const kehadiranWrapper = kehadiranInput.closest('.input-wrapper');
+                const alphaWrapper = alphaInput.closest('.input-wrapper');
+                const kehadiranError = kehadiranWrapper ? kehadiranWrapper.querySelector('.validation-error') :
+                null;
+                const alphaError = alphaWrapper ? alphaWrapper.querySelector('.validation-error') : null;
+
+                if (total > totalHariKerja) {
+                    // Show error pada Kehadiran
+                    if (kehadiranError) {
+                        kehadiranError.textContent =
+                            `Total Kehadiran + Alpha (${total}) melebihi ${totalHariKerja} hari!`;
+                        kehadiranError.classList.remove('hidden');
+                    }
+                    kehadiranInput.classList.add('border-red-500', 'focus:ring-red-500');
+                    kehadiranInput.classList.remove('border-gray-300', 'focus:ring-blue-500');
+                    kehadiranInput.setCustomValidity(
+                        `Total Kehadiran + Alpha tidak boleh lebih dari ${totalHariKerja} hari`);
+
+                    // Show error pada Alpha
+                    if (alphaError) {
+                        alphaError.textContent =
+                            `Total Kehadiran + Alpha (${total}) melebihi ${totalHariKerja} hari!`;
+                        alphaError.classList.remove('hidden');
+                    }
+                    alphaInput.classList.add('border-red-500', 'focus:ring-red-500');
+                    alphaInput.classList.remove('border-gray-300', 'focus:ring-blue-500');
+                    alphaInput.setCustomValidity(
+                        `Total Kehadiran + Alpha tidak boleh lebih dari ${totalHariKerja} hari`);
+                } else {
+                    // Clear presensi errors (tidak clear error lain seperti range validation)
+                    if (kehadiranError && kehadiranError.textContent.includes('Total Kehadiran + Alpha')) {
+                        kehadiranError.classList.add('hidden');
+                        kehadiranInput.classList.remove('border-red-500', 'focus:ring-red-500');
+                        kehadiranInput.classList.add('border-gray-300', 'focus:ring-blue-500');
+                        kehadiranInput.setCustomValidity('');
+                    }
+
+                    if (alphaError && alphaError.textContent.includes('Total Kehadiran + Alpha')) {
+                        alphaError.classList.add('hidden');
+                        alphaInput.classList.remove('border-red-500', 'focus:ring-red-500');
+                        alphaInput.classList.add('border-gray-300', 'focus:ring-blue-500');
+                        alphaInput.setCustomValidity('');
+                    }
+                }
+            }
+
+            // Validate presensi when form is submitted
+            const form = document.getElementById('form-penilaian');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    validatePresensi();
+
+                    // Check if there are any validation errors
+                    const invalidInputs = form.querySelectorAll('input:invalid');
+                    if (invalidInputs.length > 0) {
+                        e.preventDefault();
+
+                        // Focus on first invalid input
+                        invalidInputs[0].focus();
+                        invalidInputs[0].scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+
+                        showToast('error', 'Validasi Gagal',
+                            'Mohon perbaiki input yang tidak valid sebelum menyimpan.');
+                    }
                 });
-            });
+            }
         });
     </script>
 @endsection
