@@ -5,16 +5,24 @@
 @section('content')
     {{-- Header Section --}}
     <div class="mb-6">
-        <h2 class="text-3xl font-bold text-gray-900">Hasil Ranking Karyawan</h2>
-        <p class="mt-2 text-sm text-gray-600">Lihat dan analisis hasil ranking karyawan berdasarkan periode dan filter yang
-            dipilih</p>
+        @if (auth()->user()->isKaryawan())
+            <h2 class="text-3xl font-bold text-gray-900">Ranking Saya</h2>
+            <p class="mt-2 text-sm text-gray-600">Lihat hasil ranking dan penilaian kinerja Anda berdasarkan periode yang
+                dipilih</p>
+        @else
+            <h2 class="text-3xl font-bold text-gray-900">Hasil Ranking Karyawan</h2>
+            <p class="mt-2 text-sm text-gray-600">Lihat dan analisis hasil ranking karyawan berdasarkan periode dan filter
+                yang
+                dipilih</p>
+        @endif
     </div>
 
     {{-- Filter & Export Section --}}
     <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 mb-6">
         <div class="p-6">
             <form method="GET" action="{{ route('ranking.index') }}" id="filterForm" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 {{ auth()->user()->isKaryawan() ? 'lg:grid-cols-3' : 'lg:grid-cols-5' }} gap-4">
                     {{-- Filter Periode (Bulan) --}}
                     <div>
                         <label for="bulan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -70,15 +78,17 @@
                         </select>
                     </div>
 
-                    {{-- Search Nama/NIK --}}
-                    <div>
-                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
-                            Cari Karyawan
-                        </label>
-                        <input type="text" name="search" id="search" value="{{ $search }}"
-                            placeholder="Nama atau NIK..."
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                    </div>
+                    {{-- Search Nama/NIK - HANYA untuk Admin/HRD/Supervisor --}}
+                    @if (!auth()->user()->isKaryawan())
+                        <div>
+                            <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                                Cari Karyawan
+                            </label>
+                            <input type="text" name="search" id="search" value="{{ $search }}"
+                                placeholder="Nama atau NIK..."
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        </div>
+                    @endif
 
                     {{-- Button Filter --}}
                     <div class="flex items-end">

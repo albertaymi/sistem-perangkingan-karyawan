@@ -341,6 +341,11 @@ class PerhitunganController extends Controller
         $hasilQuery = HasilTopsis::byPeriode($bulan, $tahun)
             ->with('karyawan');
 
+        // PENTING: Jika login sebagai karyawan, hanya tampilkan data karyawan tersebut
+        if (auth()->user()->isKaryawan()) {
+            $hasilQuery->where('id_karyawan', auth()->id());
+        }
+
         // Filter by divisi_filter field
         // Jika divisiFilter kosong (Semua Divisi) = hanya tampilkan yang divisi_filter = NULL
         // Jika divisiFilter ada (divisi tertentu) = tampilkan yang divisi_filter = divisi tersebut
@@ -437,10 +442,15 @@ class PerhitunganController extends Controller
         }
 
         // Get hasil ranking ordered by ranking
-        $hasilRanking = HasilTopsis::byPeriode($bulan, $tahun)
-            ->with('karyawan')
-            ->orderedByRanking()
-            ->get();
+        $hasilQuery = HasilTopsis::byPeriode($bulan, $tahun)
+            ->with('karyawan');
+
+        // PENTING: Jika login sebagai karyawan, hanya tampilkan data karyawan tersebut
+        if (auth()->user()->isKaryawan()) {
+            $hasilQuery->where('id_karyawan', auth()->id());
+        }
+
+        $hasilRanking = $hasilQuery->orderedByRanking()->get();
 
         // Get periode label
         $namaBulan = [
