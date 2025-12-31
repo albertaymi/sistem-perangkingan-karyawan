@@ -655,9 +655,14 @@
                             <label for="divisi" class="block text-sm font-medium text-gray-700 mb-2">
                                 Divisi <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="divisi" id="divisi" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                placeholder="Masukkan divisi">
+                            <select name="divisi" id="divisi" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <option value="">Pilih Divisi</option>
+                                <option value="Helper Peralatan">Helper Peralatan</option>
+                                <option value="Helper Peralatan Utilities">Helper Peralatan Utilities</option>
+                                <option value="Maintenance Helper">Maintenance Helper</option>
+                                <option value="Security">Security</option>
+                            </select>
                             @error('divisi')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -668,9 +673,13 @@
                             <label for="jabatan" class="block text-sm font-medium text-gray-700 mb-2">
                                 Jabatan <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="jabatan" id="jabatan" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                placeholder="Masukkan jabatan">
+                            <select name="jabatan" id="jabatan" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <option value="">Pilih Jabatan</option>
+                                <option value="hrd">HRD</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="karyawan">Karyawan</option>
+                            </select>
                             @error('jabatan')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -830,9 +839,14 @@
                             <label for="edit_divisi" class="block text-sm font-medium text-gray-700 mb-2">
                                 Divisi <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="divisi" id="edit_divisi" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                placeholder="Masukkan divisi">
+                            <select name="divisi" id="edit_divisi" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <option value="">Pilih Divisi</option>
+                                <option value="Helper Peralatan">Helper Peralatan</option>
+                                <option value="Helper Peralatan Utilities">Helper Peralatan Utilities</option>
+                                <option value="Maintenance Helper">Maintenance Helper</option>
+                                <option value="Security">Security</option>
+                            </select>
                         </div>
 
                         {{-- Jabatan --}}
@@ -840,9 +854,13 @@
                             <label for="edit_jabatan" class="block text-sm font-medium text-gray-700 mb-2">
                                 Jabatan <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="jabatan" id="edit_jabatan" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                placeholder="Masukkan jabatan">
+                            <select name="jabatan" id="edit_jabatan" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <option value="">Pilih Jabatan</option>
+                                <option value="hrd">HRD</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="karyawan">Karyawan</option>
+                            </select>
                         </div>
 
                         {{-- Status Akun --}}

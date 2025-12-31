@@ -109,9 +109,21 @@
                                             </path>
                                         </svg>
                                     </div>
-                                    <input id="divisi" name="divisi" type="text" required value="{{ old('divisi') }}"
-                                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm"
-                                        placeholder="Masukkan divisi">
+                                    <select id="divisi" name="divisi" required
+                                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
+                                        <option value="">Pilih divisi</option>
+                                        <option value="Helper Peralatan"
+                                            {{ old('divisi') == 'Helper Peralatan' ? 'selected' : '' }}>Helper Peralatan
+                                        </option>
+                                        <option value="Helper Peralatan Utilities"
+                                            {{ old('divisi') == 'Helper Peralatan Utilities' ? 'selected' : '' }}>Helper
+                                            Peralatan Utilities</option>
+                                        <option value="Maintenance Helper"
+                                            {{ old('divisi') == 'Maintenance Helper' ? 'selected' : '' }}>Maintenance Helper
+                                        </option>
+                                        <option value="Security" {{ old('divisi') == 'Security' ? 'selected' : '' }}>
+                                            Security</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -129,10 +141,15 @@
                                             </path>
                                         </svg>
                                     </div>
-                                    <input id="jabatan" name="jabatan" type="text" required
-                                        value="{{ old('jabatan') }}"
-                                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm"
-                                        placeholder="Masukkan jabatan">
+                                    <select id="jabatan" name="jabatan" required
+                                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
+                                        <option value="">Pilih jabatan</option>
+                                        <option value="hrd" {{ old('jabatan') == 'hrd' ? 'selected' : '' }}>HRD</option>
+                                        <option value="supervisor" {{ old('jabatan') == 'supervisor' ? 'selected' : '' }}>
+                                            Supervisor</option>
+                                        <option value="karyawan" {{ old('jabatan') == 'karyawan' ? 'selected' : '' }}>
+                                            Karyawan</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -155,7 +172,8 @@
                                         <option value="">Pilih role</option>
                                         <option value="supervisor" {{ old('role') == 'supervisor' ? 'selected' : '' }}>
                                             Supervisor</option>
-                                        <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan
+                                        <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>
+                                            Karyawan
                                         </option>
                                     </select>
                                 </div>
