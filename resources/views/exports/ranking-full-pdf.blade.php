@@ -120,9 +120,10 @@
             height: 25px;
             border-radius: 50%;
             text-align: center;
-            line-height: 25px;
             font-weight: bold;
             color: white;
+            padding-top: 5px;
+            vertical-align: middle;
         }
 
         .badge-gold {
