@@ -213,7 +213,7 @@
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate mb-1">Skor Tertinggi</dt>
                             <dd class="text-2xl font-bold text-gray-900">
-                                {{ number_format($skorTertinggi, 4) }}
+                                {{ number_format($skorTertinggi * 100, 2) }}%
                             </dd>
                             @if ($karyawanTertinggi)
                                 <dd class="text-xs text-gray-600 mt-1 truncate">{{ $karyawanTertinggi->karyawan->nama }}
@@ -239,7 +239,7 @@
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate mb-1">Skor Terendah</dt>
                             <dd class="text-2xl font-bold text-gray-900">
-                                {{ number_format($skorTerendah, 4) }}
+                                {{ number_format($skorTerendah * 100, 2) }}%
                             </dd>
                             @if ($karyawanTerendah)
                                 <dd class="text-xs text-gray-600 mt-1 truncate">{{ $karyawanTerendah->karyawan->nama }}
@@ -266,7 +266,7 @@
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate mb-1">Rata-rata Skor</dt>
                             <dd class="text-3xl font-bold text-gray-900">
-                                {{ number_format($rataRataSkor, 4) }}
+                                {{ number_format($rataRataSkor * 100, 2) }}%
                             </dd>
                         </dl>
                     </div>
@@ -390,14 +390,9 @@
                                     <div class="text-sm text-gray-900">{{ $hasil->karyawan->jabatan }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="flex flex-col items-center">
-                                        <span class="text-lg font-bold text-gray-900">
-                                            {{ number_format($hasil->skor_topsis, 4) }}
-                                        </span>
-                                        <span class="text-xs text-gray-500">
-                                            ({{ number_format($hasil->skor_topsis * 100, 2) }}%)
-                                        </span>
-                                    </div>
+                                    <span class="text-lg font-bold text-gray-900">
+                                        {{ number_format($hasil->skor_topsis * 100, 2) }}%
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                     @if (auth()->user()->isSuperAdmin() ||

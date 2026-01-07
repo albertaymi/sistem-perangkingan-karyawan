@@ -403,9 +403,6 @@
                         Skor TOPSIS Final
                     </div>
                     <div style="font-size: 20px; font-weight: bold; color: #1e40af;">
-                        {{ number_format($hasil->skor_topsis, 4) }}
-                    </div>
-                    <div style="font-size: 10px; color: #2563eb; margin-top: 3px;">
                         {{ number_format($hasil->skor_topsis * 100, 2) }}%
                     </div>
                 </td>
@@ -441,7 +438,8 @@
         <div
             style="text-align: center; padding: 15px; background: linear-gradient(to right, #fef3c7, #fed7aa); border: 1px solid #fbbf24; border-radius: 8px;">
             <p style="font-size: 11px; color: #374151; margin: 0; line-height: 1.6;">
-                Dengan skor <strong style="color: #1e40af;">{{ number_format($hasil->skor_topsis, 4) }}</strong>,
+                Dengan skor <strong
+                    style="color: #1e40af;">{{ number_format($hasil->skor_topsis * 100, 2) }}%</strong>,
                 <strong>{{ $hasil->karyawan->nama }}</strong>
                 berada di peringkat
                 <strong

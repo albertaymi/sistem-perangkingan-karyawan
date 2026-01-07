@@ -233,8 +233,7 @@
                         <td>{{ $hasil->karyawan->divisi }}</td>
                         <td>{{ $hasil->karyawan->jabatan }}</td>
                         <td class="text-center">
-                            <strong>{{ number_format($hasil->skor_topsis, 4) }}</strong><br>
-                            <small>({{ number_format($hasil->skor_topsis * 100, 2) }}%)</small>
+                            <strong>{{ number_format($hasil->skor_topsis * 100, 2) }}%</strong>
                         </td>
                     </tr>
                 @endforeach
@@ -274,7 +273,7 @@
                     <td>{{ $hasil->karyawan->nama }}</td>
                     <td>{{ $hasil->karyawan->divisi }}</td>
                     <td>{{ $hasil->karyawan->jabatan }}</td>
-                    <td class="text-center">{{ number_format($hasil->skor_topsis, 4) }}</td>
+                    <td class="text-center">{{ number_format($hasil->skor_topsis * 100, 2) }}%</td>
                     <td class="text-center">{{ number_format($hasil->jarak_ideal_positif, 4) }}</td>
                     <td class="text-center">{{ number_format($hasil->jarak_ideal_negatif, 4) }}</td>
                 </tr>

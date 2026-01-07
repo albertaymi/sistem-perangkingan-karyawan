@@ -119,16 +119,11 @@
                         <p class="text-sm font-medium text-gray-600 mb-1">Skor TOPSIS</p>
                         <p class="text-3xl font-bold text-gray-900">
                             @if ($stats['skor_topsis_saya'])
-                                {{ number_format($stats['skor_topsis_saya'], 4) }}
+                                {{ number_format($stats['skor_topsis_saya'] * 100, 2) }}%
                             @else
                                 <span class="text-gray-400 text-lg">-</span>
                             @endif
                         </p>
-                        @if ($stats['skor_topsis_saya'])
-                            <p class="text-xs text-gray-500 mt-1">
-                                {{ number_format($stats['skor_topsis_saya'] * 100, 2) }}%
-                            </p>
-                        @endif
                     </div>
                     <div class="bg-blue-100 p-3 rounded-lg">
                         <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,12 +226,9 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="text-sm font-semibold text-gray-900">
-                                        {{ number_format($history['skor_topsis'], 4) }}
-                                    </div>
-                                    <div class="text-xs text-gray-500">
+                                    <span class="text-sm font-semibold text-gray-900">
                                         {{ number_format($history['skor_topsis'] * 100, 2) }}%
-                                    </div>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="text-sm text-gray-900">{{ $history['total_karyawan'] }}</div>

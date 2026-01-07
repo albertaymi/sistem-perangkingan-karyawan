@@ -98,7 +98,7 @@
 
                 <div class="text-center">
                     <p class="text-sm text-blue-100 mb-1">Skor TOPSIS</p>
-                    <p class="text-3xl font-bold">{{ number_format($hasil->skor_topsis, 4) }}</p>
+                    <p class="text-3xl font-bold">{{ number_format($hasil->skor_topsis * 100, 2) }}%</p>
                     <p class="text-xs text-blue-100 mt-1">Periode: {{ $periodeLabel }}</p>
                 </div>
             </div>
@@ -473,8 +473,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
                     <div class="text-sm font-medium text-blue-600 mb-2">Skor TOPSIS Final</div>
-                    <div class="text-4xl font-bold text-blue-700">{{ number_format($hasil->skor_topsis, 4) }}</div>
-                    <div class="text-sm text-blue-600 mt-1">{{ number_format($hasil->skor_topsis * 100, 2) }}%</div>
+                    <div class="text-4xl font-bold text-blue-700">{{ number_format($hasil->skor_topsis * 100, 2) }}%</div>
                 </div>
 
                 <div class="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
@@ -496,7 +495,8 @@
             <div
                 class="mt-6 text-center p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
                 <p class="text-sm text-gray-700">
-                    Dengan skor <span class="font-bold text-blue-700">{{ number_format($hasil->skor_topsis, 4) }}</span>,
+                    Dengan skor <span
+                        class="font-bold text-blue-700">{{ number_format($hasil->skor_topsis * 100, 2) }}%</span>,
                     <span class="font-bold">{{ $hasil->karyawan->nama }}</span>
                     berada di peringkat
                     <span
